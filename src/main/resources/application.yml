@@ -9,6 +9,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
   h2:
     console:
       enabled: true # H2 web ui
@@ -16,6 +21,6 @@ spring:
 
 logging:
   level:
-    root: INFO
+    root: DEBUG
     springbootkotlin:
       sharemapserver: DEBUG

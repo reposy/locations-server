@@ -1,19 +1,53 @@
 package springbootkotlin.sharemapserver.domain.auth.user.service
 
 import org.springframework.stereotype.Service
+import springbootkotlin.sharemapserver.config.exception.user.DuplicateUserException
 import springbootkotlin.sharemapserver.domain.user.entity.User
-import springbootkotlin.sharemapserver.domain.user.repository.UserRepository
+import springbootkotlin.sharemapserver.domain.user.service.UserService
 
 @Service
 class UserAuthService(
-    private val userRepository: UserRepository
+    val userService: UserService,
 ) {
+    companion object {
+        private const val USER_SIGN_IN_FAILED_MESSAGE = "아이디가 존재하지 않거나 비밀번호가 일치하지 않습니다."
+        private const val USER_DUPLICATE_USERNAME_MESSAGE = "이미 존재하는 아이디입니다."
+        private const val USER_DUPLICATE_NICKNAME_MESSAGE = "이미 존재하는 별명입니다."
+        private const val USER_DUPLICATE_EMAIL_MESSAGE = "이미 존재하는 이메일입니다."
+    }
+
     fun authenticate(username: String, password: String): User {
 
-        val user = userRepository.findByUsername(username)
-        if (user == null || password != user.password)
-            throw IllegalArgumentException("입력된 정보로 로그인 할 수 없습니다.")
+        val user = userService.findByUsername(username)
+            ?: throw IllegalArgumentException(USER_SIGN_IN_FAILED_MESSAGE)
+
+        if (!user.password.equals(password))
+            throw IllegalArgumentException(USER_SIGN_IN_FAILED_MESSAGE)
 
         return user
+    }
+
+    fun validateUserUniqueness(username: String, nickname: String, emailAddress: String) {
+        checkUsernameDuplicate(username)
+        checkNicknameDuplicate(nickname)
+        checkEmailAddressDuplicate(emailAddress)
+    }
+
+    fun checkUsernameDuplicate(username: String) {
+        if (userService.existsByUsername(username)) {
+            throw DuplicateUserException(USER_DUPLICATE_USERNAME_MESSAGE)
+        }
+    }
+
+    fun checkNicknameDuplicate(nickname: String) {
+        if (userService.existsByNickname(nickname)) {
+            throw DuplicateUserException(USER_DUPLICATE_NICKNAME_MESSAGE)
+        }
+    }
+
+    fun checkEmailAddressDuplicate(emailAddress: String) {
+        if (userService.existsByEmailAddress(emailAddress)) {
+            throw DuplicateUserException(USER_DUPLICATE_EMAIL_MESSAGE)
+        }
     }
 }

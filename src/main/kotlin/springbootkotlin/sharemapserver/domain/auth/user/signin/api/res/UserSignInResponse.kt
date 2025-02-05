@@ -1,6 +1,6 @@
-package springbootkotlin.sharemapserver.domain.auth.user.login.api.res
+package springbootkotlin.sharemapserver.domain.auth.user.signin.api.res
 
-data class UserLoginResponse(
+data class UserSignInResponse(
     val id: Long,
     val username: String,
     val emailAddress: String,

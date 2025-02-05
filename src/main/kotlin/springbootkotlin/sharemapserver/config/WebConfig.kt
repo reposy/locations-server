@@ -14,8 +14,8 @@ class WebConfig(
         registry.addInterceptor(sessionInterceptor)
             .addPathPatterns("/api/**") // ✅ 인증이 필요한 API만 Interceptor 적용
             .excludePathPatterns(
-                "/api/auth/login",
-                "/api/auth/signup"
+                "/api/auth/users/sign-in/**",
+                "/api/auth/users/sign-up/**"
             )
     }
 }

@@ -2,7 +2,7 @@ package springbootkotlin.sharemapserver.domain.auth.login.api
 
 import org.junit.jupiter.api.Test
 
-class UserLoginApiControllerTest {
+class UserSignInApiControllerTest {
 
     @Test
     fun `로그인 성공`() {
