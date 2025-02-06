@@ -18,7 +18,7 @@ data class UserSignUpRequest(
     @field:NotBlank(message = "별명을 입력해주세요.")
     @field:Size(min = 3, max = 10, message = "별명은 3~10자여야 가능합니다.")
     @field:Pattern(
-        regexp = "^(?=.*[a-zA-Z])[가-힣A-Za-z\\d]+$",
+        regexp = "^[가-힣A-Za-z\\d]+$",
         message = "별명은 한글(자음, 모음 단독 제외), 영문, 숫자만 가능합니다."
     )
     val nickname: String,

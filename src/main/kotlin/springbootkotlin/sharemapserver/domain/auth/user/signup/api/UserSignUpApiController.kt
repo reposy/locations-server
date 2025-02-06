@@ -9,7 +9,7 @@ import springbootkotlin.sharemapserver.domain.auth.user.signup.api.res.UserSignU
 import springbootkotlin.sharemapserver.domain.auth.user.signup.service.UserSignUpService
 
 @RestController
-@RequestMapping("/api/auth/users/sign-up")
+@RequestMapping("/api/auth/users/signup")
 class UserSignUpApiController (
     private val userSignUpService: UserSignUpService,
     private val userAuthService: UserAuthService

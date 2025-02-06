@@ -12,10 +12,19 @@ class WebConfig(
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(sessionInterceptor)
-            .addPathPatterns("/api/**") // ✅ 인증이 필요한 API만 Interceptor 적용
+            .addPathPatterns("/**")
             .excludePathPatterns(
-                "/api/auth/users/sign-in/**",
-                "/api/auth/users/sign-up/**"
+                "/users/signin/**",
+                "/api/auth/users/signin/**",
+                "/users/signup/**",
+                "/api/auth/users/signup/**",
+                "/api/auth/users/signout/**",
+
+                "/js/**",     // JavaScript 정적 리소스
+                "/css/**",    // CSS 정적 리소스
+                "/images/**", // 이미지 정적 리소스
+                "/static/**", // 기타 정적 리소스
+                "/error"      // Spring Boot 에러 핸들러
             )
     }
 }

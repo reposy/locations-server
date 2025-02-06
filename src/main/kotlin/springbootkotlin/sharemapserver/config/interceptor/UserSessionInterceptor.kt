@@ -17,12 +17,11 @@ class UserSessionInterceptor(
         handler: Any
     ): Boolean {
         val session = request.session
-
         if (!sessionService.isSessionValid(session)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "세션이 만료되었습니다. 다시 로그인하세요.")
+            response.sendRedirect("/users/signin")
             return false
         }
-
+        // 유효한 세션이 존재한다면, 만료 시간 연장
         sessionService.extendSession(session)
         return true
     }

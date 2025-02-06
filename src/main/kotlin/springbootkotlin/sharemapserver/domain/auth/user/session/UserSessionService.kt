@@ -2,7 +2,7 @@ package springbootkotlin.sharemapserver.domain.auth.user.session
 
 import jakarta.servlet.http.HttpSession
 import org.springframework.stereotype.Service
-import springbootkotlin.sharemapserver.domain.user.entity.User
+import springbootkotlin.sharemapserver.domain.auth.user.dto.UserInfoDTO
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -11,10 +11,14 @@ class UserSessionService {
 
     private val SESSION_VALID_MINUTES = 30L
 
-    fun setSession(session: HttpSession, user: User): User {
-        session.setAttribute("USER", user)
+    fun setUserInfo(session: HttpSession, obj: Any): Any {
+        session.setAttribute("USER", obj)
         extendSession(session)
-        return user
+        return obj
+    }
+
+    fun getUserInfo(session: HttpSession): UserInfoDTO? {
+        return session.getAttribute("USER") as? UserInfoDTO
     }
 
     fun isSessionValid(session: HttpSession): Boolean {

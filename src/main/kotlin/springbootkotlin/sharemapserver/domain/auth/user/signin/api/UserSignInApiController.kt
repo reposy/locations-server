@@ -7,16 +7,16 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import springbootkotlin.sharemapserver.domain.auth.user.session.UserSessionService
 import springbootkotlin.sharemapserver.domain.auth.user.service.UserAuthService
 import springbootkotlin.sharemapserver.domain.auth.user.signin.api.req.UserSignInRequest
 import springbootkotlin.sharemapserver.domain.auth.user.signin.api.res.UserSignInResponse
+import springbootkotlin.sharemapserver.domain.auth.user.signin.service.UserSignInService
 
 @RestController
-@RequestMapping("/api/auth/sign-in")
+@RequestMapping("/api/auth/users/signin")
 class UserSignInApiController(
-    val userAuthService: UserAuthService,
-    val sessionService: UserSessionService
+    private val userSignInService: UserSignInService,
+    private val userAuthService: UserAuthService
 ) {
 
     @PostMapping("")
@@ -26,10 +26,10 @@ class UserSignInApiController(
         loginForm: UserSignInRequest,
         session: HttpSession
     ): ResponseEntity<UserSignInResponse> {
-        println(loginForm)
+
         val user = userAuthService.authenticate(loginForm.username, loginForm.password)
 
-        sessionService.setSession(session, user)
+        userSignInService.userSignin(session, user)
 
         return ResponseEntity.ok(
             UserSignInResponse(

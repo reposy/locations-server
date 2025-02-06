@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
-@RequestMapping("/users/sign-up")
+@RequestMapping("/users/signup")
 class UserSignUpViewController {
 
     @GetMapping("")
     fun registerForm(): String {
-        return "/auth/users/sign-up-form"
+        return "/auth/users/signup/signup-form"
     }
 }
