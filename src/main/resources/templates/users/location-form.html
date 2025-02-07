@@ -1,0 +1,17 @@
+<div class="bg-white p-4 rounded-lg shadow-md" th:fragment="locationForm">
+    <h2 class="text-lg font-bold mb-2">📍 선택한 위치</h2>
+    <p class="text-sm text-gray-600">아래 정보를 저장하세요.</p>
+    <div class="mt-2">
+        <label class="text-gray-700 font-semibold">위도:</label>
+        <input type="text" id="latitude" class="w-full border px-2 py-1 rounded mt-1" readonly>
+    </div>
+    <div class="mt-2">
+        <label class="text-gray-700 font-semibold">경도:</label>
+        <input type="text" id="longitude" class="w-full border px-2 py-1 rounded mt-1" readonly>
+    </div>
+    <div class="mt-2">
+        <label class="text-gray-700 font-semibold">주소:</label>
+        <input type="text" id="address" class="w-full border px-2 py-1 rounded mt-1" readonly>
+    </div>
+    <button id="saveLocationBtn" class="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded-lg">저장</button>
+</div>

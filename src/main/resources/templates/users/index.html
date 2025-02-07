@@ -8,40 +8,72 @@
 <div th:replace="~{users/common/header :: header}"></div>
 
 <!-- 주요 내용 -->
-<main class="flex-1 p-4">
+<main class="flex-1 p-4 flex flex-col md:flex-row">
+    <!-- 📍 지도 -->
+    <iframe src="/naver-map" class="w-full md:w-3/4 h-64 md:h-screen" frameborder="0"></iframe>
 
-    <!-- 🔗 공유 코드 입력 -->
-    <div class="mb-4 flex items-center">
-        <label for="inviteCode"></label>
-        <input type="text" id="inviteCode" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-               placeholder="공유 코드 입력">
-        <button id="joinGroupBtn"
-                class="ml-2 bg-blue-500 text-white px-4 py-2 rounded-lg text-center whitespace-nowrap">
-            가입
-        </button>
-    </div>
+    <!-- 📌 선택한 위치 & 위치 그룹 -->
+    <div class="w-full md:w-1/4 flex flex-col md:h-screen space-y-6">
+        <!-- 📍 선택한 위치 입력 폼 -->
+        <div th:replace="~{users/location-form :: locationForm}"></div>
 
-    <!-- 📌 그룹 목록 -->
-    <div id="groupList">
-        <div class="bg-white p-4 rounded-lg shadow-md mb-4" th:each="group : ${groups}">
-            <h2 class="text-lg font-bold" th:text="${group.name}"></h2>
-            <p class="text-gray-600 text-sm" th:text="'장소: ' + ${group.locations.size} + '개'"></p>
-            <div class="flex justify-between mt-2">
-                <button class="text-blue-500" th:onclick="'shareGroup(\'' + ${group.id} + '\')'">🔗 공유</button>
+        <!-- 🔽 기존 저장된 위치 목록 -->
+        <div class="h-full md:h-1/2 flex flex-col space-y-4 p-2 overflow-y-auto border-t pt-4">
+            <h2 class="text-lg font-bold">📍 저장된 위치</h2>
+
+            <table class="w-full border-collapse border border-gray-300">
+                <thead class="bg-gray-200">
+                <tr>
+                    <th class="p-2 border border-gray-300">이름</th>
+                    <th class="p-2 border border-gray-300">주소</th>
+                </tr>
+                </thead>
+                <tbody id="locationList">
+                <tr th:each="location : ${locations}" class="border border-gray-300">
+                    <td class="p-2" th:text="${location.name}"></td>
+                    <td class="p-2" th:text="${location.address}"></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 -->
+            <div class="flex justify-center space-x-2 mt-2">
+                <button class="px-3 py-1 bg-gray-200 rounded" id="prevLocations">◀ 이전</button>
+                <button class="px-3 py-1 bg-gray-200 rounded" id="nextLocations">다음 ▶</button>
+            </div>
+        </div>
+
+        <!-- 📂 위치 그룹 선택 셀렉트 박스 -->
+        <div th:replace="~{users/location-group-form :: locationGroupForm}"></div>
+
+
+        <!-- 📂 기존 위치 그룹 목록 -->
+        <div class="h-full md:h-1/2 flex flex-col space-y-4 p-2 overflow-y-auto border-t pt-4">
+            <h2 class="text-lg font-bold">📂 저장된 위치 그룹</h2>
+
+            <table class="w-full border-collapse border border-gray-300">
+                <thead class="bg-gray-200">
+                <tr>
+                    <th class="p-2 border border-gray-300">그룹명</th>
+                </tr>
+                </thead>
+                <tbody id="groupList">
+                <tr th:each="group : ${groups}" class="border border-gray-300">
+                    <td class="p-2" th:text="${group.name}"></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이지네이션 -->
+            <div class="flex justify-center space-x-2 mt-2">
+                <button class="px-3 py-1 bg-gray-200 rounded" id="prevGroups">◀ 이전</button>
+                <button class="px-3 py-1 bg-gray-200 rounded" id="nextGroups">다음 ▶</button>
             </div>
         </div>
     </div>
-
-    <!-- ➕ 새 그룹 추가 버튼 -->
-    <button id="addGroupBtn"
-            class="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-4 shadow-lg text-center whitespace-nowrap">
-        ➕
-    </button>
-
 </main>
 
 <!-- 📢 하단 네비게이션 -->
 <div th:replace="~{users/common/footer :: footer}"></div>
-<script type="module" src="/js/users/index.js"></script>
 </body>
 </html>

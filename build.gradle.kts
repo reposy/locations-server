@@ -21,8 +21,11 @@ repositories {
 
 dependencies {
 
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
     runtimeOnly("com.h2database:h2")
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")

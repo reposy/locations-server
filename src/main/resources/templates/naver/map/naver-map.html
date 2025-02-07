@@ -1,0 +1,52 @@
+<div id="map" style="width: 100%; height: 100vh;"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        async function loadNaverMap() {
+            try {
+                const response = await fetch("/api/naver/map/proxy-maps");
+                const scriptText = await response.text();
+
+                if (!scriptText.includes("naver.maps")) {
+                    throw new Error("📌 네이버 맵 API 로드 실패 (naver 객체 없음)");
+                }
+
+                const script = document.createElement("script");
+                script.text = scriptText;
+                document.body.appendChild(script);
+
+                script.onload = function () {
+                    console.log("✅ Naver Map API 로드 완료");
+                    if (typeof window.initMap === "function") {
+                        window.initMap();
+                    }
+                };
+
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+
+        window.initMap = function () {
+            if (typeof naver === "undefined") {
+                console.error("📌 네이버 맵 API 로드 실패 (naver 객체 없음)");
+                return;
+            }
+
+            let map = new naver.maps.Map('map', {
+                center: new naver.maps.LatLng(37.3595704, 127.105399),
+                zoom: 13
+            });
+
+            // 🎯 스크롤 이벤트 리스너를 passive 모드로 설정
+            document.addEventListener('mousewheel', function (event) {}, { passive: true });
+            document.addEventListener('touchmove', function (event) {}, { passive: true });
+
+            console.log("✅ Naver Map Initialized");
+        };
+
+        // ✅ document가 로드된 후 실행
+        loadNaverMap();
+    });
+
+</script>
