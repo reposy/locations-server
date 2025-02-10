@@ -10,7 +10,11 @@
 <!-- 주요 내용 -->
 <main class="flex-1 p-4 flex flex-col md:flex-row">
     <!-- 📍 지도 -->
-    <iframe src="/naver-map" class="w-full md:w-3/4 h-64 md:h-screen" frameborder="0"></iframe>
+    <div class="w-full h-[50vh] min-h-[300px] md:h-screen flex">
+        <div th:replace="~{naver/map/naver-map :: map}"></div>
+    </div>
+    <!-- 📍 지도 -->
+<!--    <iframe src="/naver-map" class="w-full md:w-3/4 h-64 md:h-screen" frameborder="0"></iframe>-->
 
     <!-- 📌 선택한 위치 & 위치 그룹 -->
     <div class="w-full md:w-1/4 flex flex-col md:h-screen space-y-6">
@@ -76,4 +80,5 @@
 <!-- 📢 하단 네비게이션 -->
 <div th:replace="~{users/common/footer :: footer}"></div>
 </body>
+<script type="module" src="/js/users/index.js"></script>
 </html>

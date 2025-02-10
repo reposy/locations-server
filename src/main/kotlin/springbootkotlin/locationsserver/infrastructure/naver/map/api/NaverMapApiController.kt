@@ -1,44 +1,135 @@
 package springbootkotlin.locationsserver.infrastructure.naver.map.api
 
-import jakarta.servlet.http.HttpServletResponse
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import springbootkotlin.locationsserver.config.properties.NaverMapProperties
-import springbootkotlin.locationsserver.infrastructure.naver.map.service.NaverMapService
-import springbootkotlin.locationsserver.infrastructure.map.api.res.NaverGeocodeResponse
+import springbootkotlin.locationsserver.infrastructure.naver.map.api.res.NaverMapApiResponse
 
 @RestController
 @RequestMapping("/api/naver/map")
 class NaverMapApiController(
+    private val httpClient: OkHttpClient,
     private val naverMapProperties: NaverMapProperties,
-    private val naverMapService: NaverMapService,
-    private val client: OkHttpClient
-) {
-    @GetMapping("/geocode")
-    fun getGeocode(@RequestParam address: String): NaverGeocodeResponse? {
-        return naverMapService.getGeocode(address)
+
+    ) {
+    @GetMapping("/client-id")
+    fun getClientId(): ResponseEntity<NaverMapApiResponse> {
+        return ResponseEntity.ok(
+            NaverMapApiResponse(naverMapProperties.clientId)
+        )
     }
 
-    @GetMapping("/proxy-maps")
-    fun proxyNaverMapScript(response: HttpServletResponse) {
-        val scriptUrl = "https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${naverMapProperties.clientId}?callback=initMap"
+    @GetMapping("/reverse-geocode")
+    fun getAddress(
+        @RequestParam lat: Double,
+        @RequestParam lng: Double
+    ): ResponseEntity<String> {
+        val url = "https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc" +
+                "?coords=$lng,$lat&sourcecrs=EPSG:4326&orders=roadaddr&output=json"
 
         val request = Request.Builder()
-            .url(scriptUrl)
-            .header("Referer", "http://localhost:8080") // 네이버 클라우드 콘솔에 등록된 URL 필요
+            .url(url)
+            .addHeader("X-NCP-APIGW-API-KEY-ID", naverMapProperties.clientId)
+            .addHeader("X-NCP-APIGW-API-KEY", naverMapProperties.clientSecret)
+            .get()
             .build()
 
-        client.newCall(request).execute().use { scriptResponse ->
-            val responseBody = scriptResponse.body?.string() ?: ""
-
-            // ✅ 네이버 API 응답을 로그로 출력
-            println("🔍 네이버 API 응답 상태 코드: ${scriptResponse.code}")
-            println("🔍 네이버 API 응답 본문: $responseBody")
-
-            response.contentType = "application/javascript"
-            response.writer.write(responseBody)
+        return try {
+//            httpClient.newCall(request).execute().use { response ->
+//                println(response.body)
+//                if (!response.isSuccessful) {
+//                    throw RuntimeException("📌 네이버 Reverse Geocoding API 호출 실패: ${response.code}")
+//                }
+//                ResponseEntity.ok(response.body?.string() ?: "주소 없음")
+//            }
+//            .region.area1.name
+            ResponseEntity.ok(
+                """
+{
+    "status": {
+        "code": 0,
+        "name": "ok",
+        "message": "done"
+    },
+    "results": [
+        {
+            "name": "roadaddr",
+            "code": {
+                "id": "ROAD_NAME",
+                "type": "string",
+                "mapping": "roadaddr"
+            },
+            "region": {
+                "area0": {
+                    "name": "KR",
+                    "coords": {
+                        "center": {
+                            "crs": "EPSG:4326",
+                            "x": 127.105399,
+                            "y": 37.3595704
+                        }
+                    }
+                },
+                "area1": {
+                    "name": "경기도",
+                    "coords": {
+                        "center": {
+                            "crs": "EPSG:4326",
+                            "x": 127.105399,
+                            "y": 37.3595704
+                        }
+                    }
+                },
+                "area2": {
+                    "name": "성남시 분당구",
+                    "coords": {
+                        "center": {
+                            "crs": "EPSG:4326",
+                            "x": 127.105399,
+                            "y": 37.3595704
+                        }
+                    }
+                },
+                "area3": {
+                    "name": "정자동",
+                    "coords": {
+                        "center": {
+                            "crs": "EPSG:4326",
+                            "x": 127.105399,
+                            "y": 37.3595704
+                        }
+                    }
+                }
+            },
+            "land": {
+                "name": "정자일로",
+                "number1": "95",
+                "number2": "1",
+                "addition0": {
+                    "type": "BLDG",
+                    "value": "NAVER 그린팩토리"
+                },
+                "coords": {
+                    "center": {
+                        "crs": "EPSG:4326",
+                        "x": 127.105399,
+                        "y": 37.3595704
+                    }
+                }
+            }
+        }
+    ]
+}
+                    }]
+            """.trimIndent()
+            )
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("📌 서버에서 주소 변환 요청 중 오류 발생: ${e.message}")
         }
     }
+
 }
