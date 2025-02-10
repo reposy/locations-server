@@ -1,4 +1,35 @@
 package springbootkotlin.locationsserver.domain.location.entity
 
-class Location {
-}
+import jakarta.persistence.*
+import springbootkotlin.locationsserver.config.entity.AuditableEntity
+
+@Entity
+@Table(name = "location")
+class Location(
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0, // PK
+
+    @Column(nullable = false)
+    val createUserId: Long, // FK (사용자 ID)
+
+    @Column(nullable = false, length = 255)
+    val nickname: String, // 장소 이름
+
+    @Column(nullable = true, length = 500)
+    val address: String?, // 주소 (옵션)
+
+    @Column(nullable = true, length = 500)
+    val detailAddress: String?, // 상세 주소 (옵션)
+
+    @Column(nullable = true, length = 255)
+    val roadName: String?, // 도로명 주소 (옵션)
+
+    @Column(nullable = false)
+    val latitude: Double, // 위도
+
+    @Column(nullable = false)
+    val longitude: Double, // 경도
+
+) : AuditableEntity() // 생성일, 수정일, 논리적 삭제 관리

@@ -2,6 +2,7 @@ package springbootkotlin.locationsserver.domain.auth.user.session
 
 import jakarta.servlet.http.HttpSession
 import org.springframework.stereotype.Service
+import springbootkotlin.locationsserver.config.exception.user.UserSessionExpiredException
 import springbootkotlin.locationsserver.domain.auth.user.dto.UserInfoDTO
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -11,14 +12,23 @@ class UserSessionService {
 
     private val SESSION_VALID_MINUTES = 30L
 
-    fun setUserInfo(session: HttpSession, obj: Any): Any {
-        session.setAttribute("USER", obj)
+    fun setUserInfo(session: HttpSession, userInfo: UserInfoDTO): UserInfoDTO {
+        session.setAttribute("USER", userInfo)
         extendSession(session)
-        return obj
+        return userInfo
     }
 
-    fun getUserInfo(session: HttpSession): UserInfoDTO? {
-        return session.getAttribute("USER") as? UserInfoDTO
+    fun getUserInfo(session: HttpSession): UserInfoDTO {
+        val userInfo = session.getAttribute("USER") as? UserInfoDTO
+            ?: throw UserSessionExpiredException("세션이 만료되었습니다. 다시 로그인해주세요.")
+
+        if (!isSessionValid(session)) {
+            invalidateSession(session)
+            throw UserSessionExpiredException("세션이 만료되었습니다. 다시 로그인해주세요.")
+        }
+
+        extendSession(session)
+        return userInfo
     }
 
     fun isSessionValid(session: HttpSession): Boolean {
