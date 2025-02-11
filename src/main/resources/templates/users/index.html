@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<th:block th:replace="~{users/common/head :: head}"></th:block>  <!-- 공통 head 사용 -->
-
+<head>
+    <th:block th:replace="~{users/common/head :: head}"></th:block>  <!-- 공통 head 사용 -->
+</head>
 <body class="bg-gray-100 flex flex-col min-h-screen text-base md:text-lg xl:text-xl">
 
 <!-- 헤더 -->
@@ -10,75 +11,21 @@
 <!-- 주요 내용 -->
 <main class="flex-1 p-4 flex flex-col md:flex-row">
     <!-- 📍 지도 -->
-    <div class="w-full h-[50vh] min-h-[300px] md:h-screen flex">
-        <div th:replace="~{naver/map/naver-map :: map}"></div>
+    <div id="map-container" class="w-full h-[50vh] min-h-[300px] md:h-screen flex">
+        <div th:replace="~{users/map :: map}"></div>
     </div>
-    <!-- 📍 지도 -->
-<!--    <iframe src="/naver-map" class="w-full md:w-3/4 h-64 md:h-screen" frameborder="0"></iframe>-->
 
-    <!-- 📌 선택한 위치 & 위치 그룹 -->
+    <!-- 📌 위치 관리 영역 -->
     <div class="w-full md:w-1/4 flex flex-col md:h-screen space-y-6">
-        <!-- 📍 선택한 위치 입력 폼 -->
         <div th:replace="~{users/location-form :: locationForm}"></div>
-
-        <!-- 🔽 기존 저장된 위치 목록 -->
-        <div class="h-full md:h-1/2 flex flex-col space-y-4 p-2 overflow-y-auto border-t pt-4">
-            <h2 class="text-lg font-bold">📍 저장된 위치</h2>
-
-            <table class="w-full border-collapse border border-gray-300">
-                <thead class="bg-gray-200">
-                <tr>
-                    <th class="p-2 border border-gray-300">이름</th>
-                    <th class="p-2 border border-gray-300">주소</th>
-                </tr>
-                </thead>
-                <tbody id="locationList">
-                <tr th:each="location : ${locations}" class="border border-gray-300">
-                    <td class="p-2" th:text="${location.name}"></td>
-                    <td class="p-2" th:text="${location.address}"></td>
-                </tr>
-                </tbody>
-            </table>
-
-            <!-- 페이지네이션 -->
-            <div class="flex justify-center space-x-2 mt-2">
-                <button class="px-3 py-1 bg-gray-200 rounded" id="prevLocations">◀ 이전</button>
-                <button class="px-3 py-1 bg-gray-200 rounded" id="nextLocations">다음 ▶</button>
-            </div>
-        </div>
-
-        <!-- 📂 위치 그룹 선택 셀렉트 박스 -->
-        <div th:replace="~{users/location-group-form :: locationGroupForm}"></div>
-
-
-        <!-- 📂 기존 위치 그룹 목록 -->
-        <div class="h-full md:h-1/2 flex flex-col space-y-4 p-2 overflow-y-auto border-t pt-4">
-            <h2 class="text-lg font-bold">📂 저장된 위치 그룹</h2>
-
-            <table class="w-full border-collapse border border-gray-300">
-                <thead class="bg-gray-200">
-                <tr>
-                    <th class="p-2 border border-gray-300">그룹명</th>
-                </tr>
-                </thead>
-                <tbody id="groupList">
-                <tr th:each="group : ${groups}" class="border border-gray-300">
-                    <td class="p-2" th:text="${group.name}"></td>
-                </tr>
-                </tbody>
-            </table>
-
-            <!-- 페이지네이션 -->
-            <div class="flex justify-center space-x-2 mt-2">
-                <button class="px-3 py-1 bg-gray-200 rounded" id="prevGroups">◀ 이전</button>
-                <button class="px-3 py-1 bg-gray-200 rounded" id="nextGroups">다음 ▶</button>
-            </div>
-        </div>
+        <div th:replace="~{users/location-list :: locationList}"></div>
     </div>
 </main>
 
 <!-- 📢 하단 네비게이션 -->
 <div th:replace="~{users/common/footer :: footer}"></div>
+<script type="module" src="/js/users/map.js"></script>
+<script type="module" src="/js/users/location-form.js"></script>
+<script type="module" src="/js/users/location-list.js"></script>
 </body>
-<script type="module" src="/js/users/index.js"></script>
 </html>

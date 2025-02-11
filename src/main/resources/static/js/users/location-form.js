@@ -1,83 +1,85 @@
 import { getAddressFromCoords } from "/js/naver/map/reverse-geocode.js";
+import { saveLocation } from "/js/service/locationService.js";
+import eventBus from "/js/users/common/eventBus.js";ㅇ
 
-export const setupLocationForm = (naverMap) => {
-    console.log("✅ Location Form Script Loaded");
+let naverMap = null;
+let activeMarker = null;
 
-    let activeMarker = null; // 현재 활성화된 마커 (하나만 유지)
-    const menuLayer = document.createElement("div");
-    menuLayer.style.position = "absolute";
-    menuLayer.style.zIndex = "10000";
-    menuLayer.style.backgroundColor = "#fff";
-    menuLayer.style.border = "solid 1px #333";
-    menuLayer.style.padding = "10px";
-    menuLayer.style.display = "none";
-    document.body.appendChild(menuLayer);
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ location-form.js Loaded");
 
-    // 📌 지도 클릭 이벤트: 기존 마커 삭제 후 새로운 마커 추가
+    // 📌 네이버 지도 로드 완료 이벤트 수신
+    eventBus.subscribe("mapLoaded", (loadedMap) => {
+        console.log("📌 네이버 지도 객체 수신 - location-form.js");
+        naverMap = loadedMap;
+        setupMapClickEvent();
+        setupSaveLocationEvent();
+    });
+});
+
+// 📌 지도 클릭 이벤트 설정
+const setupMapClickEvent = () => {
+    if (!naverMap) {
+        console.error("📌 네이버 지도 객체가 아직 로드되지 않았습니다.");
+        return;
+    }
+
     naver.maps.Event.addListener(naverMap, "click", async (e) => {
         const lat = e.coord._lat;
         const lng = e.coord._lng;
 
         console.log(`📍 클릭한 위치: 위도 ${lat}, 경도 ${lng}`);
 
-        // 기존 마커가 있다면 삭제
         if (activeMarker) {
             activeMarker.setMap(null);
         }
 
-        // 새로운 마커 추가
         activeMarker = new naver.maps.Marker({
             position: e.coord,
             map: naverMap,
         });
 
-        // 선택한 위치 업데이트
         document.getElementById("latitude").value = lat;
         document.getElementById("longitude").value = lng;
 
-        // 📌 주소 변환 기능 호출
         const address = await getAddressFromCoords(lat, lng);
         document.getElementById("address").value = address;
     });
+};
 
-    // 📌 키보드 이벤트: ESC 입력 시 모든 마커 삭제
-    document.addEventListener("keydown", (e) => {
-        const ESC = 27;
+// 📌 위치 저장 버튼 이벤트 설정
+const setupSaveLocationEvent = () => {
+    document.getElementById("saveLocationBtn").addEventListener("click", async () => {
+        const nickname = document.getElementById("nickname").value.trim();
+        const latitude = document.getElementById("latitude").value;
+        const longitude = document.getElementById("longitude").value;
+        const address = document.getElementById("address").value;
 
-        if (e.keyCode === ESC) {
-            e.preventDefault();
-
-            if (activeMarker) {
-                activeMarker.setMap(null);
-                activeMarker = null;
-            }
-
-            menuLayer.style.display = "none";
-            console.log("🗑️ 모든 마커 삭제");
+        if (!latitude || !longitude) {
+            alert("📌 위치를 먼저 선택해주세요.");
+            return;
         }
-    });
 
-    // 📌 마우스 우클릭 이벤트: 좌표 메뉴 표시
-    naver.maps.Event.addListener(naverMap, "rightclick", (e) => {
-        const lat = e.coord._lat;
-        const lng = e.coord._lng;
+        try {
+            const locationData = {
+                nickname: nickname || `사용자 위치 ${new Date().toLocaleString()}`,
+                address: address || "주소 미확인",
+                detailAddress: null,
+                roadName: null,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude)
+            };
 
-        const coordHtml = `
-            <strong>Coord:</strong> (${lat}, ${lng})<br />
-            <strong>Point:</strong> ${e.point}<br />
-            <strong>Offset:</strong> ${e.offset}
-        `;
+            const savedLocation = await saveLocation(locationData);
+            if (!savedLocation) throw new Error("위치 저장 실패");
 
-        menuLayer.style.left = `${e.offset.x}px`;
-        menuLayer.style.top = `${e.offset.y}px`;
-        menuLayer.innerHTML = coordHtml;
-        menuLayer.style.display = "block";
+            alert(`✅ 위치 저장 성공! [ID: ${savedLocation.id}]`);
 
-        console.log(`📍 우클릭 위치: 위도 ${lat}, 경도 ${lng}`);
-    });
-
-    // 📌 마우스 클릭 시 메뉴 숨기기
-    naver.maps.Event.addListener(naverMap, "mousedown", () => {
-        menuLayer.style.display = "none";
+            // 📌 이벤트 발생: 목록 & 지도 업데이트 (`location-list.js`, `map.js`에서 처리)
+            eventBus.publish("locationSaved", savedLocation);
+        } catch (error) {
+            console.error(error.message);
+            alert(`❌ 오류 발생: ${error.message}`);
+        }
     });
 };

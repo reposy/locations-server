@@ -1,8 +1,8 @@
-package springbootkotlin.locationsserver.config
+package springbootkotlin.locationsserver.infrastructure.config
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
-import springbootkotlin.locationsserver.config.properties.NaverMapProperties
+import springbootkotlin.locationsserver.infrastructure.config.properties.NaverMapProperties
 
 @Configuration
 @EnableConfigurationProperties(NaverMapProperties::class)

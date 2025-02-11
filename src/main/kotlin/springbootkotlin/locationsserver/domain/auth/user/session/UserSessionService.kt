@@ -2,7 +2,7 @@ package springbootkotlin.locationsserver.domain.auth.user.session
 
 import jakarta.servlet.http.HttpSession
 import org.springframework.stereotype.Service
-import springbootkotlin.locationsserver.config.exception.user.UserSessionExpiredException
+import springbootkotlin.locationsserver.infrastructure.config.exception.user.UserSessionExpiredException
 import springbootkotlin.locationsserver.domain.auth.user.dto.UserInfoDTO
 import java.time.ZoneId
 import java.time.ZonedDateTime

@@ -1,7 +1,7 @@
 package springbootkotlin.locationsserver.domain.user.entity
 
 import jakarta.persistence.*
-import springbootkotlin.locationsserver.config.entity.AuditableEntity
+import springbootkotlin.locationsserver.infrastructure.config.entity.AuditableEntity
 import java.time.LocalDateTime
 
 @Entity

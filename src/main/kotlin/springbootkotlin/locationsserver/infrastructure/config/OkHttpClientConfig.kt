@@ -1,4 +1,4 @@
-package springbootkotlin.locationsserver.config
+package springbootkotlin.locationsserver.infrastructure.config
 
 import okhttp3.OkHttpClient
 import org.springframework.context.annotation.Bean

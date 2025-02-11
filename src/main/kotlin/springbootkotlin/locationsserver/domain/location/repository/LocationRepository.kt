@@ -6,5 +6,5 @@ import springbootkotlin.locationsserver.domain.location.entity.Location
 
 @Repository
 interface LocationRepository : JpaRepository<Location, Long> {
-    fun findByCreateUserIdOrderByIdDesc(userId: Long): List<Location>?
+    fun findByCreateUserIdOrderByIdDesc(userId: Long): List<Location>
 }

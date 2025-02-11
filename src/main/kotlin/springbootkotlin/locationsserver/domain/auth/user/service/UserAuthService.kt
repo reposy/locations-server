@@ -1,7 +1,7 @@
 package springbootkotlin.locationsserver.domain.auth.user.service
 
 import org.springframework.stereotype.Service
-import springbootkotlin.locationsserver.config.exception.user.DuplicateUserException
+import springbootkotlin.locationsserver.infrastructure.config.exception.user.DuplicateUserException
 import springbootkotlin.locationsserver.domain.user.entity.User
 import springbootkotlin.locationsserver.domain.user.service.UserService
 

@@ -1,20 +1,18 @@
-package springbootkotlin.locationsserver.infrastructure.naver.map.api
+package springbootkotlin.locationsserver.infrastructure.external.naver.map.api
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import springbootkotlin.locationsserver.config.properties.NaverMapProperties
-import springbootkotlin.locationsserver.infrastructure.naver.map.api.res.NaverMapApiResponse
+import springbootkotlin.locationsserver.infrastructure.config.properties.NaverMapProperties
+import springbootkotlin.locationsserver.infrastructure.external.naver.map.api.res.NaverMapApiResponse
 
 @RestController
 @RequestMapping("/api/naver/map")
 class NaverMapApiController(
-    private val httpClient: OkHttpClient,
     private val naverMapProperties: NaverMapProperties,
-
-    ) {
+) {
     @GetMapping("/client-id")
     fun getClientId(): ResponseEntity<NaverMapApiResponse> {
         return ResponseEntity.ok(

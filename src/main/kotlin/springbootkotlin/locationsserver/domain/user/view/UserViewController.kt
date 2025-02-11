@@ -5,7 +5,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import springbootkotlin.locationsserver.config.properties.NaverMapProperties
+import springbootkotlin.locationsserver.infrastructure.config.properties.NaverMapProperties
 import springbootkotlin.locationsserver.domain.auth.user.session.UserSessionService
 
 @Controller

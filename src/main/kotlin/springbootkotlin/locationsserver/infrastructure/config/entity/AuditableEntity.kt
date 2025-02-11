@@ -1,4 +1,4 @@
-package springbootkotlin.locationsserver.config.entity
+package springbootkotlin.locationsserver.infrastructure.config.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners

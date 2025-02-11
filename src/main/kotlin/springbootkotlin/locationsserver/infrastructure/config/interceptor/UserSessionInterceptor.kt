@@ -1,10 +1,10 @@
-package springbootkotlin.locationsserver.config.interceptor
+package springbootkotlin.locationsserver.infrastructure.config.interceptor
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
-import springbootkotlin.locationsserver.config.exception.user.UserSessionExpiredException
+import springbootkotlin.locationsserver.infrastructure.config.exception.user.UserSessionExpiredException
 import springbootkotlin.locationsserver.domain.auth.user.session.UserSessionService
 
 @Component

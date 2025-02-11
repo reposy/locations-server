@@ -1,9 +1,9 @@
-package springbootkotlin.locationsserver.config
+package springbootkotlin.locationsserver.infrastructure.config
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import springbootkotlin.locationsserver.config.interceptor.UserSessionInterceptor
+import springbootkotlin.locationsserver.infrastructure.config.interceptor.UserSessionInterceptor
 
 @Configuration
 class WebConfig(

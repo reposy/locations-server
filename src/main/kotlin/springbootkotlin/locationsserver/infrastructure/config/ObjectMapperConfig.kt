@@ -1,4 +1,4 @@
-package springbootkotlin.locationsserver.config
+package springbootkotlin.locationsserver.infrastructure.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
