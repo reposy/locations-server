@@ -1,21 +1,152 @@
 <div id="locationForm" class="bg-white p-4 rounded-lg shadow-md" th:fragment="locationForm">
     <h2 class="text-lg font-bold mb-2">📍 선택한 위치</h2>
     <p class="text-sm text-gray-600">아래 정보를 저장하세요.</p>
+
+    <!-- ✅ 마커 종류 선택 (라디오 버튼 + 툴팁 UI 개선 + 선택 시 테두리) -->
+    <div class="mt-2">
+        <label class="text-gray-700 font-semibold">마커 종류:</label>
+        <div class="grid grid-cols-3 md:grid-cols-6 gap-4 justify-center my-2">
+
+            <!-- 기본 마커 -->
+            <label class="group flex flex-col items-center cursor-pointer">
+                <input type="radio" name="markerType" value="default" class="peer hidden" checked data-label="기본">
+                <span class="text-2xl peer-checked:border-2 peer-checked:border-blue-500 p-1 rounded-lg">📍</span>
+                <span class="text-xs bg-gray-800 text-white rounded px-2 py-1 mt-1 invisible group-hover:visible">
+                기본 마커
+            </span>
+            </label>
+
+            <!-- 카페 -->
+            <label class="group flex flex-col items-center cursor-pointer">
+                <input type="radio" name="markerType" value="cafe" class="peer hidden" data-label="카페">
+                <span class="text-2xl peer-checked:border-2 peer-checked:border-blue-500 p-1 rounded-lg">☕</span>
+                <span class="text-xs bg-gray-800 text-white rounded px-2 py-1 mt-1 invisible group-hover:visible">
+                카페
+            </span>
+            </label>
+
+            <!-- 식당 -->
+            <label class="group flex flex-col items-center cursor-pointer">
+                <input type="radio" name="markerType" value="restaurant" class="peer hidden" data-label="음식점">
+                <span class="text-2xl peer-checked:border-2 peer-checked:border-blue-500 p-1 rounded-lg">🍽️</span>
+                <span class="text-xs bg-gray-800 text-white rounded px-2 py-1 mt-1 invisible group-hover:visible">
+                식당
+            </span>
+            </label>
+
+            <!-- 편의점 -->
+            <label class="group flex flex-col items-center cursor-pointer">
+                <input type="radio" name="markerType" value="store" class="peer hidden" data-label="편의점">
+                <span class="text-2xl peer-checked:border-2 peer-checked:border-blue-500 p-1 rounded-lg">🏪</span>
+                <span class="text-xs bg-gray-800 text-white rounded px-2 py-1 mt-1 invisible group-hover:visible">
+                편의점
+            </span>
+            </label>
+
+            <!-- 주유소 -->
+            <label class="group flex flex-col items-center cursor-pointer">
+                <input type="radio" name="markerType" value="gas" class="peer hidden" data-label="주유소">
+                <span class="text-2xl peer-checked:border-2 peer-checked:border-blue-500 p-1 rounded-lg">⛽</span>
+                <span class="text-xs bg-gray-800 text-white rounded px-2 py-1 mt-1 invisible group-hover:visible">
+                주유소
+            </span>
+            </label>
+
+            <!-- 주차장 -->
+            <label class="group flex flex-col items-center cursor-pointer">
+                <input type="radio" name="markerType" value="parking" class="peer hidden" data-label="주차장">
+                <span class="text-2xl peer-checked:border-2 peer-checked:border-blue-500 p-1 rounded-lg">🅿️</span>
+                <span class="text-xs bg-gray-800 text-white rounded px-2 py-1 mt-1 invisible group-hover:visible">
+                주차장
+            </span>
+            </label>
+        </div>
+    </div>
+
+    <!-- ✅ 마커 색상 선택 UI (기본 마커만 보이도록 설정) -->
+    <div id="markerColorWrapper">
+        <label class="text-gray-700 font-semibold">마커 색상:</label>
+        <div class="flex flex-wrap gap-2 my-2">
+            <!-- 색상 버튼 -->
+            <button class="w-6 h-6 rounded-full border color-button bg-red-300 group relative" data-color="#FFADAD">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Red
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-orange-300 group relative" data-color="#FFD6A5">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Orange
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-yellow-200 group relative" data-color="#FDFFB6">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Yellow
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-green-200 group relative" data-color="#CAFFBF">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Green
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-blue-200 group relative" data-color="#9BF6FF">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Blue
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-indigo-200 group relative" data-color="#A0C4FF">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Indigo
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-purple-300 group relative" data-color="#BDB2FF">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Purple
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-cyan-300 group relative" data-color="#A7ECEE">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Cyan
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-pink-300 group relative" data-color="#F3A0E3">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Magenta
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-yellow-400 group relative" data-color="#D2A679">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Brown
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-gray-300 group relative" data-color="#BEBEBE">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Pastel Gray
+            </span>
+            </button>
+            <button class="w-6 h-6 rounded-full border color-button bg-gray-700 group relative" data-color="#4F4F4F">
+            <span class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+                Black
+            </span>
+            </button>
+        </div>
+        <input type="color" id="markerColor" class="w-full border px-2 py-1 rounded mt-1" value="#9BF6FF">
+    </div>
+
     <div class="mt-2">
         <label class="text-gray-700 font-semibold">닉네임:</label>
         <input type="text" id="nickname" class="w-full border px-2 py-1 rounded mt-1" placeholder="위치 닉네임 입력">
     </div>
-    <div class="mt-2">
-        <label class="text-gray-700 font-semibold">위도:</label>
-        <input type="text" id="latitude" class="w-full border px-2 py-1 rounded mt-1" readonly>
-    </div>
-    <div class="mt-2">
-        <label class="text-gray-700 font-semibold">경도:</label>
-        <input type="text" id="longitude" class="w-full border px-2 py-1 rounded mt-1" readonly>
-    </div>
+
+    <input type="hidden" id="latitude">
+    <input type="hidden" id="longitude">
+
     <div class="mt-2">
         <label class="text-gray-700 font-semibold">주소:</label>
         <input type="text" id="address" class="w-full border px-2 py-1 rounded mt-1" readonly>
     </div>
-    <button id="saveLocationBtn" class="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded-lg">저장</button>
+
+    <button id="saveLocationBtn"
+            class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-md transition">
+        저장
+    </button>
 </div>

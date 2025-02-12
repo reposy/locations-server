@@ -21,7 +21,9 @@ class LocationService(
                 roadName = request.roadName,
                 latitude = request.latitude,
                 longitude = request.longitude,
-                createUserId = userId
+                markerColor = request.markerColor,
+                markerType = request.markerType,
+                createUserId = userId,
         ))
     }
 

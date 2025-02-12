@@ -32,4 +32,16 @@ class Location(
     @Column(nullable = false)
     val longitude: Double, // 경도
 
-) : AuditableEntity() // 생성일, 수정일, 논리적 삭제 관리
+    @Column(nullable = true, length = 20)
+    val markerColor: String = DEFAULT_MARKER_COLOR, // ✅ 마커 색상 필드 추가 (기본값: 파랑)
+
+    @Column(nullable = true, length = 20)
+    val markerType: String = DEFAULT_MARKER_TYPE // ✅ 마커 타입 필드 추가 (기본값: 기본 마커)
+
+) : AuditableEntity() {
+
+    companion object {
+        const val DEFAULT_MARKER_COLOR = "#0000FF" // 기본 마커 색상 (파랑)
+        const val DEFAULT_MARKER_TYPE = "default" // 기본 마커 타입 (네이버 기본 핀)
+    }
+}

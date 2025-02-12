@@ -1,85 +1,115 @@
-import { getAddressFromCoords } from "/js/naver/map/reverse-geocode.js";
-import { saveLocation } from "/js/service/locationService.js";
-import eventBus from "/js/users/common/eventBus.js";ㅇ
+import { saveLocation, loadUserLocations } from "/js/service/locationService.js";
+import { drawMarkers } from "/js/users/map.js";
+import { updateLocationList } from "/js/users/location-list.js";
 
-let naverMap = null;
-let activeMarker = null;
+/** 📌 현재 선택된 위치 정보 */
+let focusedLocation = null;
 
+/** 📌 DOMContentLoaded 후 폼 초기화 */
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ location-form.js Loaded");
 
-    // 📌 네이버 지도 로드 완료 이벤트 수신
-    eventBus.subscribe("mapLoaded", (loadedMap) => {
-        console.log("📌 네이버 지도 객체 수신 - location-form.js");
-        naverMap = loadedMap;
-        setupMapClickEvent();
-        setupSaveLocationEvent();
-    });
+    setupSaveLocationEvent();
+    setupColorButtons();
+    setupMarkerTypeChange();
+
+    initializeNickname();
 });
 
-// 📌 지도 클릭 이벤트 설정
-const setupMapClickEvent = () => {
-    if (!naverMap) {
-        console.error("📌 네이버 지도 객체가 아직 로드되지 않았습니다.");
-        return;
+/** 📌 클릭한 위치의 주소를 받아와 폼 업데이트 */
+const updateFormWithAddress = (location) => {
+    if (!location) return;
+
+    focusedLocation = location;
+
+    document.getElementById("latitude").value = location.latitude || "";
+    document.getElementById("longitude").value = location.longitude || "";
+    document.getElementById("address").value = location.address || "";
+};
+
+/** 📌 닉네임 자동 설정 */
+const initializeNickname = () => {
+    const selectedMarker = document.querySelector('input[name="markerType"]:checked');
+    const nicknameInput = document.getElementById("nickname");
+
+    if (selectedMarker) {
+        const labelElement = selectedMarker.closest("label").querySelector("span:last-of-type");
+        const labelText = labelElement ? labelElement.textContent.trim() : "위치";
+        nicknameInput.value = `${labelText}: `;
     }
+};
 
-    naver.maps.Event.addListener(naverMap, "click", async (e) => {
-        const lat = e.coord._lat;
-        const lng = e.coord._lng;
+/** 📌 마커 유형 변경 이벤트 처리 */
+const handleMarkerTypeChange = () => {
+    const markerType = document.querySelector('input[name="markerType"]:checked')?.value || "default";
+    const markerColorWrapper = document.getElementById("markerColorWrapper");
 
-        console.log(`📍 클릭한 위치: 위도 ${lat}, 경도 ${lng}`);
+    markerColorWrapper.classList.toggle("hidden", markerType !== "default");
+    console.log(`📌 마커 타입 변경됨: ${markerType}`);
+    initializeNickname();
+};
 
-        if (activeMarker) {
-            activeMarker.setMap(null);
-        }
-
-        activeMarker = new naver.maps.Marker({
-            position: e.coord,
-            map: naverMap,
+/** 📌 색상 버튼 이벤트 설정 */
+const setupColorButtons = () => {
+    document.querySelectorAll(".color-button").forEach(button => {
+        button.addEventListener("click", () => {
+            document.getElementById("markerColor").value = button.getAttribute("data-color");
         });
+    });
 
-        document.getElementById("latitude").value = lat;
-        document.getElementById("longitude").value = lng;
-
-        const address = await getAddressFromCoords(lat, lng);
-        document.getElementById("address").value = address;
+    document.getElementById("markerColor")?.addEventListener("input", (event) => {
+        document.getElementById("markerColor").value = event.target.value;
     });
 };
 
-// 📌 위치 저장 버튼 이벤트 설정
+/** 📌 마커 유형 변경 감지 */
+const setupMarkerTypeChange = () => {
+    document.querySelectorAll('input[name="markerType"]').forEach(radio => {
+        radio.addEventListener("change", handleMarkerTypeChange);
+    });
+};
+
+/** 📌 위치 저장 */
 const setupSaveLocationEvent = () => {
     document.getElementById("saveLocationBtn").addEventListener("click", async () => {
-        const nickname = document.getElementById("nickname").value.trim();
-        const latitude = document.getElementById("latitude").value;
-        const longitude = document.getElementById("longitude").value;
-        const address = document.getElementById("address").value;
-
-        if (!latitude || !longitude) {
+        if (!focusedLocation || !focusedLocation.latitude || !focusedLocation.longitude) {
             alert("📌 위치를 먼저 선택해주세요.");
             return;
         }
 
-        try {
-            const locationData = {
-                nickname: nickname || `사용자 위치 ${new Date().toLocaleString()}`,
-                address: address || "주소 미확인",
-                detailAddress: null,
-                roadName: null,
-                latitude: parseFloat(latitude),
-                longitude: parseFloat(longitude)
-            };
+        console.log("✅ 저장할 위치 정보:", focusedLocation);
 
-            const savedLocation = await saveLocation(locationData);
-            if (!savedLocation) throw new Error("위치 저장 실패");
+        const nickname = document.getElementById("nickname").value.trim();
+        const address = document.getElementById("address").value || "주소 미확인";
+        const markerColor = document.getElementById("markerColor")?.value || "#00FF00";
+        const markerType = document.querySelector('input[name="markerType"]:checked')?.value || "default";
+
+        try {
+            const savedLocation = await saveLocation({
+                nickname,
+                address,
+                latitude: focusedLocation.latitude,
+                longitude: focusedLocation.longitude,
+                markerColor,
+                markerType
+            });
+
+            if (!savedLocation || !savedLocation.id) {
+                throw new Error("❌ 위치 저장 후 ID가 반환되지 않았습니다.");
+            }
 
             alert(`✅ 위치 저장 성공! [ID: ${savedLocation.id}]`);
 
-            // 📌 이벤트 발생: 목록 & 지도 업데이트 (`location-list.js`, `map.js`에서 처리)
-            eventBus.publish("locationSaved", savedLocation);
+            // ✅ 저장된 위치 리스트 갱신
+            const updatedLocations = await loadUserLocations();
+            updateLocationList(updatedLocations);
+            drawMarkers(updatedLocations);
+
         } catch (error) {
-            console.error(error.message);
-            alert(`❌ 오류 발생: ${error.message}`);
+            console.error("❌ 오류 발생:", error.message);
+            alert("❌ 오류 발생: " + error.message);
         }
     });
 };
+
+export { updateFormWithAddress };

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 data class LocationSaveRequest(
+
     @field:NotBlank(message = "위치 이름은 필수입니다.")
     @field:Size(max = 100, message = "위치 이름은 최대 100자까지 가능합니다.")
     val nickname: String,
@@ -22,4 +23,12 @@ data class LocationSaveRequest(
 
     @field:NotNull(message = "경도는 필수입니다.")
     val longitude: Double,
+
+    @field:NotBlank(message = "주소는 필수입니다.")
+    @field:Size(max = 20, message = "색상 값은 최대 20자까지 가능합니다.")
+    val markerColor: String,
+
+    @field:NotBlank(message = "주소는 필수입니다.")
+    @field:Size(max = 20, message = "마커 유형 값은 최대 20자까지 가능합니다.")
+    val markerType: String,
 )
