@@ -1,14 +1,12 @@
-// static/js/users/location-form.js
+// src/locationForm.js
 import { saveLocation } from "/js/service/locationService.js";
+import { qs, qsa } from "/js/users/common/utils.js";
+import { store } from "/js/users/common/store.js";
 
-/** @type {Object|null} 현재 선택된 위치 */
 let currentLocation = null;
 
-/** 유틸: DOM 요소 선택 (단일) */
-const qs = (selector) => document.querySelector(selector);
-
 /**
- * 폼 초기화
+ * 폼 초기화 및 이벤트 등록
  * @param {Function} onSave - 저장 성공 후 콜백
  */
 export const initForm = (onSave) => {
@@ -19,11 +17,10 @@ export const initForm = (onSave) => {
     }
     const defaultBlue = "#9BF6FF";
     const markerColorInput = qs("#markerColor");
-    if (markerColorInput) {
-        markerColorInput.value = defaultBlue;
-    }
+    if (markerColorInput) markerColorInput.value = defaultBlue;
+
     const colorButtons = container.querySelectorAll(".color-button");
-    // 초기: 파란색 버튼 활성화
+    // 초기: 기본 파란색 버튼 활성화
     colorButtons.forEach((btn) => {
         const btnColor = btn.getAttribute("data-color");
         if (btnColor === defaultBlue) {
@@ -32,25 +29,26 @@ export const initForm = (onSave) => {
             btn.classList.remove("active", "ring-2", "ring-black");
         }
     });
-    // 마커 유형 변경 이벤트
-    container.querySelectorAll('input[name="markerType"]').forEach((radio) => {
-        radio.addEventListener("change", handleMarkerTypeChange);
-    });
-    // 색상 버튼 클릭 이벤트
+
+    qsa('input[name="markerType"]').forEach((radio) =>
+        radio.addEventListener("change", handleMarkerTypeChange)
+    );
     colorButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
             colorButtons.forEach((b) => b.classList.remove("active", "ring-2", "ring-black"));
             btn.classList.add("active", "ring-2", "ring-black");
             const newColor = btn.getAttribute("data-color");
             if (markerColorInput) markerColorInput.value = newColor;
+            updateFormFromInputs();
         });
     });
     if (markerColorInput) {
         markerColorInput.addEventListener("input", () => {
             colorButtons.forEach((b) => b.classList.remove("active", "ring-2", "ring-black"));
+            updateFormFromInputs();
         });
     }
-    // 저장 버튼 클릭
+
     const saveBtn = qs("#saveLocationBtn");
     if (saveBtn) {
         saveBtn.addEventListener("click", async () => {
@@ -77,7 +75,7 @@ export const initForm = (onSave) => {
     initializeNickname();
 };
 
-/** 마커 유형 변경 시 색상 영역 토글 및 닉네임 초기화 */
+/** 마커 유형 변경 시 색상 영역 토글 및 폼 업데이트 */
 const handleMarkerTypeChange = () => {
     const container = qs("#locationForm");
     if (!container) return;
@@ -89,6 +87,7 @@ const handleMarkerTypeChange = () => {
             : markerColorWrapper.classList.add("hidden");
     }
     initializeNickname();
+    updateFormFromInputs();
 };
 
 /** 기본 닉네임 초기화 */
@@ -104,20 +103,28 @@ const initializeNickname = () => {
     }
 };
 
+/** 폼 입력값 변화에 따라 폼 데이터 업데이트 */
+const updateFormFromInputs = () => {
+    updateForm();
+};
+
 /**
  * 폼 업데이트
- * 선택된 위치에 현재 폼의 markerColor와 markerType 값을 추가
- * @param {Object} location
- * @returns {Object} currentLocation 업데이트된 값
+ * 현재 입력값(색상, 마커 유형 등)을 반영하여 currentLocation 및 store의 locationFormData 업데이트
+ * @param {Object} location (optional)
+ * @returns {Object} 업데이트된 currentLocation
  */
-export const updateForm = (location) => {
+export const updateForm = (location = {}) => {
+    // 변경: 이전 currentLocation과 병합하지 않고 새 위치 객체로 대체
     currentLocation = { ...location };
-    qs("#latitude").value = location.latitude || "";
-    qs("#longitude").value = location.longitude || "";
-    qs("#address").value = location.address || "";
+    qs("#latitude").value = currentLocation.latitude || "";
+    qs("#longitude").value = currentLocation.longitude || "";
+    qs("#address").value = currentLocation.address || "";
     const markerColorInput = qs("#markerColor");
     currentLocation.markerColor = markerColorInput ? markerColorInput.value : "#9BF6FF";
     const markerTypeSelected = document.querySelector('input[name="markerType"]:checked');
     currentLocation.markerType = markerTypeSelected ? markerTypeSelected.value : "default";
+    // store 업데이트: locationFormData 반영
+    store.setState({ locationFormData: { ...currentLocation } });
     return currentLocation;
 };

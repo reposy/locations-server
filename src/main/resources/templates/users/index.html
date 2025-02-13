@@ -10,12 +10,12 @@
 
 <!-- 주요 내용 -->
 <main class="flex-1 p-4 flex flex-col md:flex-row">
-    <!-- 📍 지도 -->
+    <!-- 📍 지도 영역 -->
     <div id="map-container" class="w-full h-[40vh] min-h-[300px] md:w-2/3 md:h-screen flex">
         <div th:replace="~{users/map :: map}"></div>
     </div>
 
-    <!-- 📌 위치 관리 영역 (더 넓게 조정) -->
+    <!-- 📌 위치 관리 영역 -->
     <div class="w-full md:w-1/3 flex flex-col md:h-screen space-y-6">
         <div th:replace="~{users/location-form :: locationForm}"></div>
         <div th:replace="~{users/location-list :: locationList}"></div>
@@ -24,9 +24,12 @@
 
 <!-- 📢 하단 네비게이션 -->
 <div th:replace="~{users/common/footer :: footer}"></div>
+
+<!-- 스크립트: 새 리팩터링한 파일 경로 -->
+<!-- store와 mapMarker는 모듈 내부에서 import되므로 별도 include 필요 없음 -->
 <script type="module" src="/js/users/map.js"></script>
-<script type="module" src="/js/users/location-form.js"></script>
-<script type="module" src="/js/users/location-list.js"></script>
+<script type="module" src="/js/users/locationForm.js"></script>
+<script type="module" src="/js/users/locationList.js"></script>
 <script type="module" src="/js/users/index.js"></script>
 </body>
 </html>

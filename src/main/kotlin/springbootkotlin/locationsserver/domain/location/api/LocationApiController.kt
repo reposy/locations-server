@@ -12,7 +12,7 @@ import springbootkotlin.locationsserver.domain.location.service.LocationService
 
 @RestController
 @RequestMapping("/api/locations")
-class LocationController(
+class LocationApiController(
     private val locationService: LocationService,
     private val sessionService: UserSessionService
 ) {

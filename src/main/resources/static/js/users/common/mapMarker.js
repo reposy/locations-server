@@ -1,7 +1,5 @@
-// static/js/users/common/mapMarker.js
-
 /**
- * Utility: SVG 문자열을 Data URL로 변환
+ * SVG 문자열을 Data URL로 변환
  * @param {string} svg
  * @returns {string}
  */
@@ -9,8 +7,8 @@ const svgToDataURL = (svg) =>
     "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
 
 /**
- * 기본 마커 SVG 생성 – 선택한 색상 반영
- * @param {string} color
+ * 기본 마커(핀) SVG 생성 – 선택한 색상 반영
+ * @param {string} color - 예: "#9BF6FF"
  * @returns {string}
  */
 const generatePinMarkerSVG = (color) => {
@@ -27,7 +25,7 @@ const generatePinMarkerSVG = (color) => {
 
 /**
  * 아이콘 마커 SVG 생성 – 마커 유형에 따른 이모지 사용
- * @param {string} markerType
+ * @param {string} markerType - 예: "cafe", "restaurant"
  * @returns {string}
  */
 const generateIconMarkerSVG = (markerType) => {
@@ -60,13 +58,13 @@ const getMarkerEmoji = (markerType) => {
 
 /**
  * SVG 기반 마커 아이콘 생성
- * - markerType이 "default"이면 선택한 색상 반영한 핀 SVG,
- * - 그 외는 해당 아이콘 SVG.
+ * - markerType이 "default"이면 선택한 색상을 반영한 핀 SVG 생성
+ * - 그 외는 해당 아이콘 SVG 생성
  * @param {string} markerType
  * @param {string} color
  * @returns {string}
  */
-const generateMarkerSVG = (markerType, color) =>
+export const generateMarkerSVG = (markerType, color) =>
     markerType === "default"
         ? generatePinMarkerSVG(color)
         : generateIconMarkerSVG(markerType);
@@ -106,7 +104,9 @@ export const createMarker = (naverMap, location) => {
 };
 
 /**
- * 정보창 생성 및 열기 함수들
+ * 정보창 생성 함수
+ * @param {string} content
+ * @returns {InfoWindow}
  */
 export const createInfoWindow = (content) =>
     new naver.maps.InfoWindow({
@@ -114,14 +114,20 @@ export const createInfoWindow = (content) =>
         disableAnchor: true,
     });
 
+/**
+ * 정보창 열기 함수
+ * @param {Object} naverMap
+ * @param {InfoWindow} infoWindow
+ * @param {Marker} marker
+ */
 export const openInfoWindow = (naverMap, infoWindow, marker) => {
     infoWindow.open(naverMap, marker);
 };
 
 /**
- * 리스트에서 사용할 마커 아이콘 반환 (HTML 문자열)
+ * 리스트에 사용할 마커 아이콘 HTML 생성
  * - 기본 마커: 선택한 색상의 원,
- * - 그 외: 해당 아이콘(이모지).
+ * - 그 외: 해당 아이콘(이모지)
  * @param {string} markerType
  * @param {string} color
  * @returns {string}
