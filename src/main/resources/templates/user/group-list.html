@@ -1,21 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Group List</title>
+</head>
+<body>
 <div th:fragment="groupList">
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold">My Groups</h1>
-        <!-- 대시보드 내 추가 사이드 메뉴 토글 버튼 (필요 시) -->
-        <button id="sideMenuToggle" class="bg-blue-500 text-white px-4 py-2 rounded">
-            Menu
-        </button>
+    <div class="mb-4">
+        <h1 class="text-2xl font-bold">내 그룹</h1>
     </div>
-
-    <!-- 그룹 생성 버튼 -->
-    <div class="mt-4">
-        <button id="createGroupBtn" class="bg-green-500 text-white px-4 py-2 rounded">
-            Create Group
-        </button>
-    </div>
-
-    <!-- 그룹 목록 영역 -->
-    <div id="groupList" class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <!-- 그룹 카드 1 -->
         <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
             <h2 class="text-xl font-semibold">Group A</h2>
@@ -45,19 +39,14 @@
             <p class="text-gray-600">Location Sharing: OFF</p>
             <div class="mt-2 h-40 bg-gray-200 rounded"></div>
         </div>
-        <!-- 그룹 카드 반복문 예제 -->
-        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer"
-             th:each="group : ${groups}"
-             th:onclick="'location.href=\'/groups/' + ${group.id} + '\'" >
-            <h2 class="text-xl font-semibold" th:text="${group.name}">Group Name</h2>
-            <p class="text-gray-600">
-                Members: <span th:text="${group.memberCount}">0</span>
-            </p>
-            <p class="text-gray-600">
-                Location Sharing: <span th:text="${group.isLocationSharing ? 'ON' : 'OFF'}">OFF</span>
-            </p>
-            <!-- 지도 영역 (JS에서 초기화 예정) -->
-            <div class="mt-2 h-40 bg-gray-200 rounded" th:id="'map-' + ${group.id}"></div>
-        </div>
     </div>
+    <!-- 플로팅 액션 버튼: 그룹 생성 -->
+    <button id="createGroupBtn" class="fixed bottom-20 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg focus:outline-none z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+    </button>
+    <script type="module" src="/js/user/group-list.js" defer></script>
 </div>
+</body>
+</html>

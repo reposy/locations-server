@@ -6,6 +6,7 @@ import springbootkotlin.locationsserver.domain.group.entity.GroupMember
 
 @Repository
 interface GroupMemberRepository : JpaRepository<GroupMember, Long> {
-    fun findByGroup_Id(groupId: Long): List<GroupMember>
+    fun findByGroupId(groupId: Long): List<GroupMember>
     fun existsByGroupIdAndUserId(groupId: Long, userId: Long): Boolean
+    fun findByUserId(userId: Long): List<GroupMember>
 }
