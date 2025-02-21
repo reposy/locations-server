@@ -35,5 +35,4 @@ abstract class AuditableEntity {
         this.isDeleted = false
         this.deletedAt = null
     }
-
 }

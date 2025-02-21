@@ -1,6 +1,8 @@
 package springbootkotlin.locationsserver.domain.user.entity
 
 import jakarta.persistence.*
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
 import springbootkotlin.locationsserver.infrastructure.config.entity.AuditableEntity
 import java.time.LocalDateTime
 
@@ -12,6 +14,7 @@ data class User(
     val id: Long = 0,
 
     @Column(nullable = false, unique = true)
+    @field:NotBlank(message = "Username cannot be blank")
     val username: String,
 
     @Column(nullable = false)
@@ -21,6 +24,7 @@ data class User(
     val nickname: String,
 
     @Column(nullable = false, unique = true)
+    @field:Email(message = "Invalid email address")
     val emailAddress: String,
 
     @Column(nullable = false, updatable = false)

@@ -1,26 +1,30 @@
 package springbootkotlin.locationsserver.domain.user.view
 
-import jakarta.servlet.http.HttpSession
 import org.springframework.stereotype.Controller
-import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import springbootkotlin.locationsserver.infrastructure.config.properties.NaverMapProperties
-import springbootkotlin.locationsserver.domain.auth.user.session.UserSessionService
 
 @Controller
 @RequestMapping("")
-class UserViewController(
-    private val sessionService: UserSessionService,
-    private val naverMapProperties: NaverMapProperties
-) {
+class UserViewController {
 
-    @GetMapping("")
-    fun home (session: HttpSession, model: Model): String {
+    @GetMapping("/")
+    fun index(): String {
+        return "/user/index"
+    }
 
-        val userInfo = sessionService.getUserInfo(session)
-        model.addAttribute("user", userInfo)
-        model.addAttribute("clientId", naverMapProperties.clientId)
-        return "/users/index"
+    @GetMapping("/group-list")
+    fun groupList(): String {
+        return "/user/group-list"
+    }
+
+    @GetMapping("/profile")
+    fun profilePage(): String {
+        return "/user/profile"
+    }
+
+    @GetMapping("/invitations")
+    fun invitationListPage(): String {
+        return "/user/invitations/invitation-list"
     }
 }

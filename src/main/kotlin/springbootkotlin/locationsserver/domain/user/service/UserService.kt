@@ -4,11 +4,15 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import springbootkotlin.locationsserver.domain.user.entity.User
 import springbootkotlin.locationsserver.domain.user.repository.UserRepository
+import java.time.LocalDateTime
 
 @Service
 class UserService(
     private val userRepository: UserRepository
 ) {
+
+    @Transactional(readOnly = true)
+    fun findById(userId: Long): User? = userRepository.findById(userId).orElse(null)
 
     @Transactional // ✅ 트랜잭션이 필요 (쓰기 작업)
     fun save(user: User): User = userRepository.save(user)
@@ -24,4 +28,14 @@ class UserService(
 
     @Transactional(readOnly = true)
     fun existsByEmailAddress(emailAddress: String): Boolean = userRepository.existsByEmailAddress(emailAddress)
+
+    /**
+     * 사용자 로그인 시, 성공 시 마지막 로그인 시간을 업데이트합니다.
+     * 실제 비밀번호 검증은 별도의 인증 로직이나 Security 프레임워크(예: Spring Security)에서 처리하는 것이 일반적입니다.
+     */
+    @Transactional
+    fun updateLastLoginedAt(user: User): User {
+        user.lastLoginedAt = LocalDateTime.now()
+        return userRepository.save(user)
+    }
 }

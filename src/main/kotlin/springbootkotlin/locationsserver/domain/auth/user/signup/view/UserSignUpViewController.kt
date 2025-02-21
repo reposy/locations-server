@@ -10,6 +10,6 @@ class UserSignUpViewController {
 
     @GetMapping("")
     fun registerForm(): String {
-        return "/auth/users/signup/signup-form"
+        return "/auth/user/signup/signup-form"
     }
 }

@@ -1,0 +1,63 @@
+<div th:fragment="groupList">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold">My Groups</h1>
+        <!-- 대시보드 내 추가 사이드 메뉴 토글 버튼 (필요 시) -->
+        <button id="sideMenuToggle" class="bg-blue-500 text-white px-4 py-2 rounded">
+            Menu
+        </button>
+    </div>
+
+    <!-- 그룹 생성 버튼 -->
+    <div class="mt-4">
+        <button id="createGroupBtn" class="bg-green-500 text-white px-4 py-2 rounded">
+            Create Group
+        </button>
+    </div>
+
+    <!-- 그룹 목록 영역 -->
+    <div id="groupList" class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- 그룹 카드 1 -->
+        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
+            <h2 class="text-xl font-semibold">Group A</h2>
+            <p class="text-gray-600">Members: 5</p>
+            <p class="text-gray-600">Location Sharing: ON</p>
+            <!-- 지도 영역: JS에서 초기화 예정 -->
+            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
+        </div>
+        <!-- 그룹 카드 2 -->
+        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
+            <h2 class="text-xl font-semibold">Group B</h2>
+            <p class="text-gray-600">Members: 3</p>
+            <p class="text-gray-600">Location Sharing: OFF</p>
+            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
+        </div>
+        <!-- 그룹 카드 3 -->
+        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
+            <h2 class="text-xl font-semibold">Group C</h2>
+            <p class="text-gray-600">Members: 8</p>
+            <p class="text-gray-600">Location Sharing: ON</p>
+            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
+        </div>
+        <!-- 그룹 카드 4 -->
+        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
+            <h2 class="text-xl font-semibold">Group D</h2>
+            <p class="text-gray-600">Members: 4</p>
+            <p class="text-gray-600">Location Sharing: OFF</p>
+            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
+        </div>
+        <!-- 그룹 카드 반복문 예제 -->
+        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer"
+             th:each="group : ${groups}"
+             th:onclick="'location.href=\'/groups/' + ${group.id} + '\'" >
+            <h2 class="text-xl font-semibold" th:text="${group.name}">Group Name</h2>
+            <p class="text-gray-600">
+                Members: <span th:text="${group.memberCount}">0</span>
+            </p>
+            <p class="text-gray-600">
+                Location Sharing: <span th:text="${group.isLocationSharing ? 'ON' : 'OFF'}">OFF</span>
+            </p>
+            <!-- 지도 영역 (JS에서 초기화 예정) -->
+            <div class="mt-2 h-40 bg-gray-200 rounded" th:id="'map-' + ${group.id}"></div>
+        </div>
+    </div>
+</div>
