@@ -2,9 +2,9 @@ package springbootkotlin.locationsserver.domain.group.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import springbootkotlin.locationsserver.domain.group.entity.Group
 import springbootkotlin.locationsserver.domain.group.entity.GroupMember
 import springbootkotlin.locationsserver.domain.group.repository.GroupMemberRepository
-import springbootkotlin.locationsserver.domain.group.entity.Group
 import springbootkotlin.locationsserver.domain.user.entity.User
 
 @Service
@@ -14,10 +14,15 @@ class GroupMemberService(
     private val groupMemberRepository: GroupMemberRepository
 ) {
 
-    fun isUserAuthorizedForGroup(userId: Long, groupId: Long): Boolean {
-        val group = groupService.getGroupById(groupId) ?: return false
-        if (group.createUser.id == userId) return true
+    // 그룹에 참여한 멤버인지 확인 (접근 권한)
+    fun isMember(userId: Long, groupId: Long): Boolean {
         return groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)
+    }
+
+    // 그룹 소유자인지 확인 (수정, 삭제 등 민감한 작업 권한)
+    fun isOwner(userId: Long, groupId: Long): Boolean {
+        val group: Group = groupService.getGroupById(groupId)
+        return group.createUser.id == userId
     }
 
     /**

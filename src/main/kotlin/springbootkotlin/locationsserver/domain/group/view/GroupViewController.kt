@@ -24,11 +24,11 @@ class GroupViewController(
         // 세션에서 로그인한 사용자 정보를 가져옵니다.
         val userInfo: UserInfoDTO = userSessionService.getUserInfo(session)
 
-        // 그룹 접근 권한 검증
-        if (!groupMemberService.isUserAuthorizedForGroup(userInfo.id, groupId)) {
+        // 그룹 접근 권한 검증: 멤버이면 접근 가능
+        if (!groupMemberService.isMember(userInfo.id, groupId)) {
             throw IllegalArgumentException("Access denied: You are not authorized to view this group")
         }
 
-        return "/group/group-detail" // /templates/group/group-detail.html 뷰 반환
+        return "/user/group-detail"
     }
 }

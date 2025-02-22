@@ -21,12 +21,9 @@ class GroupMemberApiController(
         @PathVariable groupId: Long,
         @RequestBody request: CreateGroupMemberRequest
     ): GroupMemberResponse {
-        // userId를 이용하여 실제 User 엔티티를 조회
         val user = userService.findById(request.userId)
             ?: throw IllegalArgumentException("User not found with id: ${request.userId}")
-        // groupId를 통해 Group 엔티티 조회
         val group = groupService.getGroupById(groupId)
-        // 멤버 추가 처리
         val member = groupMemberService.addMember(
             group = group,
             user = user,
@@ -47,13 +44,11 @@ class GroupMemberApiController(
         @PathVariable memberId: Long,
         @RequestBody request: UpdateSharingStatusRequest
     ): GroupMemberResponse {
-        // 필요시 groupId 검증 추가 가능
         val member = groupMemberService.updateSharingStatus(memberId, request.isSharingLocation)
         return GroupMemberResponse.fromEntity(member)
     }
 }
 
-// 요청 DTO
 data class CreateGroupMemberRequest(
     val userId: Long,
     val isSharingLocation: Boolean
@@ -63,11 +58,11 @@ data class UpdateSharingStatusRequest(
     val isSharingLocation: Boolean
 )
 
-// 응답 DTO
 data class GroupMemberResponse(
     val id: Long?,
     val groupId: Long,
     val userId: Long,
+    val nickname: String, // 추가: 사용자 닉네임
     val isSharingLocation: Boolean,
     val joinedAt: String
 ) {
@@ -77,6 +72,7 @@ data class GroupMemberResponse(
                 id = entity.id,
                 groupId = entity.group.id!!,
                 userId = entity.user.id,
+                nickname = entity.user.nickname,  // User 엔티티의 닉네임을 사용
                 isSharingLocation = entity.isSharingLocation,
                 joinedAt = entity.joinedAt.toString()
             )

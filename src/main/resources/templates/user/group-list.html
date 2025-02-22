@@ -9,36 +9,51 @@
     <div class="mb-4">
         <h1 class="text-2xl font-bold">내 그룹</h1>
     </div>
+    <!-- 그룹 카드들을 렌더링할 컨테이너 -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- 그룹 카드 1 -->
-        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
-            <h2 class="text-xl font-semibold">Group A</h2>
-            <p class="text-gray-600">Members: 5</p>
-            <p class="text-gray-600">Location Sharing: ON</p>
-            <!-- 지도 영역: JS에서 초기화 예정 -->
-            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
+        <div id="groupList">
+
         </div>
-        <!-- 그룹 카드 2 -->
-        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
-            <h2 class="text-xl font-semibold">Group B</h2>
-            <p class="text-gray-600">Members: 3</p>
-            <p class="text-gray-600">Location Sharing: OFF</p>
-            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
-        </div>
-        <!-- 그룹 카드 3 -->
-        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
-            <h2 class="text-xl font-semibold">Group C</h2>
-            <p class="text-gray-600">Members: 8</p>
-            <p class="text-gray-600">Location Sharing: ON</p>
-            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
-        </div>
-        <!-- 그룹 카드 4 -->
-        <div class="bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">
-            <h2 class="text-xl font-semibold">Group D</h2>
-            <p class="text-gray-600">Members: 4</p>
-            <p class="text-gray-600">Location Sharing: OFF</p>
-            <div class="mt-2 h-40 bg-gray-200 rounded"></div>
-        </div>
+<!--        &lt;!&ndash; 테스트용 그룹 카드 1 &ndash;&gt;-->
+<!--        <div class="group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">-->
+<!--            <h2 class="text-xl font-semibold">Group A</h2>-->
+<!--            <p class="text-gray-600">Members: 5</p>-->
+<!--            <p class="text-gray-600">Max Users: 10</p>-->
+<!--            <p class="text-gray-600">Location Sharing: ON</p>-->
+<!--            <div class="mt-2 h-40 bg-gray-200 rounded"></div>-->
+<!--            &lt;!&ndash; 삭제 버튼: 기본 opacity-0, 카드에 마우스 오버 시 group-hover:opacity-100 &ndash;&gt;-->
+<!--            <button class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-red-200 text-red-700 px-2 py-1 rounded text-sm">−</button>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 테스트용 그룹 카드 2 &ndash;&gt;-->
+<!--        <div class="group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">-->
+<!--            <h2 class="text-xl font-semibold">Group B</h2>-->
+<!--            <p class="text-gray-600">Members: 3</p>-->
+<!--            <p class="text-gray-600">Max Users: 10</p>-->
+<!--            <p class="text-gray-600">Location Sharing: OFF</p>-->
+<!--            <div class="mt-2 h-40 bg-gray-200 rounded"></div>-->
+<!--            <button class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-red-200 text-red-700 px-2 py-1 rounded text-sm">−</button>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 테스트용 그룹 카드 3 &ndash;&gt;-->
+<!--        <div class="group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">-->
+<!--            <h2 class="text-xl font-semibold">Group C</h2>-->
+<!--            <p class="text-gray-600">Members: 8</p>-->
+<!--            <p class="text-gray-600">Max Users: 10</p>-->
+<!--            <p class="text-gray-600">Location Sharing: ON</p>-->
+<!--            <div class="mt-2 h-40 bg-gray-200 rounded"></div>-->
+<!--            <button class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-red-200 text-red-700 px-2 py-1 rounded text-sm">−</button>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; 테스트용 그룹 카드 4 &ndash;&gt;-->
+<!--        <div class="group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer">-->
+<!--            <h2 class="text-xl font-semibold">Group D</h2>-->
+<!--            <p class="text-gray-600">Members: 4</p>-->
+<!--            <p class="text-gray-600">Max Users: 10</p>-->
+<!--            <p class="text-gray-600">Location Sharing: OFF</p>-->
+<!--            <div class="mt-2 h-40 bg-gray-200 rounded"></div>-->
+<!--            <button class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-red-200 text-red-700 px-2 py-1 rounded text-sm">−</button>-->
+<!--        </div>-->
     </div>
     <!-- 플로팅 액션 버튼: 그룹 생성 -->
     <button id="createGroupBtn" class="fixed bottom-20 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg focus:outline-none z-50">
@@ -46,7 +61,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
     </button>
-    <script type="module" src="/js/user/group-list.js" defer></script>
 </div>
 </body>
 </html>

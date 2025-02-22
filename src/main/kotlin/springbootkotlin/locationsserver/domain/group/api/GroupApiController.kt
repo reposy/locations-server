@@ -41,49 +41,61 @@ class GroupApiController(
         if (bindingResult.hasErrors()) {
             throw IllegalArgumentException(bindingResult.fieldError?.defaultMessage ?: "Invalid input")
         }
-        // 세션에서 현재 사용자 정보 가져오기
         val userInfo = userSessionService.getUserInfo(session)
         val user = userService.findById(userInfo.id)
             ?: throw IllegalArgumentException("User not found with id: ${userInfo.id}")
 
-        // Group 엔티티 생성
         val group = Group(
             createUser = user,
             name = request.name,
             maxUsers = request.maxUsers
         )
-        // 그룹 생성
         val createdGroup = groupService.createGroup(group)
-
-        // 그룹 생성 후, 생성자를 그룹 멤버로 추가 (예: 위치 공유 기본값 true로 설정)
+        // 생성 후, 생성자를 그룹 멤버로 추가 (위치 공유 기본값 true)
         groupMemberService.addMember(createdGroup, user, isSharingLocation = true)
 
         return GroupResponse.fromEntity(createdGroup)
     }
 
     @GetMapping("/{groupId}")
-    fun getGroup(@PathVariable groupId: Long): GroupResponse {
+    fun getGroup(@PathVariable groupId: Long, session: HttpSession): GroupResponse {
+        val userInfo = userSessionService.getUserInfo(session)
+        if (!groupMemberService.isMember(userInfo.id, groupId)) {
+            throw IllegalArgumentException("Access denied: You are not a member of this group")
+        }
         val group = groupService.getGroupById(groupId)
-            ?: throw IllegalArgumentException("Group not found with id: $groupId")
         return GroupResponse.fromEntity(group)
     }
 
-    @PutMapping("/{groupId}/name")
-    fun updateGroupName(
+    // 그룹 업데이트 엔드포인트: 수정은 소유자만 가능
+    @PutMapping("/{groupId}")
+    fun updateGroup(
         @PathVariable groupId: Long,
-        @RequestBody request: UpdateGroupNameRequest
+        @Valid @RequestBody request: UpdateGroupRequest,
+        bindingResult: BindingResult,
+        session: HttpSession
     ): GroupResponse {
-        return GroupResponse.fromEntity(groupService.updateGroupName(groupId, request.newName))
+        if (bindingResult.hasErrors()) {
+            throw IllegalArgumentException(bindingResult.fieldError?.defaultMessage ?: "Invalid input")
+        }
+        val userInfo = userSessionService.getUserInfo(session)
+        if (!groupMemberService.isOwner(userInfo.id, groupId)) {
+            throw IllegalArgumentException("수정 권한이 없습니다.")
+        }
+        val updatedGroup = groupService.updateGroup(groupId, request.newName, request.newMax)
+        return GroupResponse.fromEntity(updatedGroup)
     }
 
-    @PutMapping("/{groupId}/max-users")
-    fun updateGroupMaxUsers(
-        @PathVariable groupId: Long,
-        @RequestBody request: UpdateGroupMaxUsersRequest
-    ): GroupResponse {
-        return GroupResponse.fromEntity(groupService.updateGroupMaxUsers(groupId, request.newMax))
+    // 그룹 삭제 엔드포인트: 삭제는 소유자만 가능
+    @DeleteMapping("/{groupId}")
+    fun deleteGroup(@PathVariable groupId: Long, session: HttpSession): GroupResponse {
+        val userInfo = userSessionService.getUserInfo(session)
+        if (!groupMemberService.isOwner(userInfo.id, groupId)) {
+            throw IllegalArgumentException("삭제 권한이 없습니다.")
+        }
+        val deletedGroup = groupService.deleteGroup(groupId)
+        return GroupResponse.fromEntity(deletedGroup)
     }
-
 }
 
 data class CreateGroupRequest(
@@ -95,11 +107,12 @@ data class CreateGroupRequest(
     val maxUsers: Int
 )
 
-data class UpdateGroupNameRequest(
-    val newName: String
-)
-
-data class UpdateGroupMaxUsersRequest(
+data class UpdateGroupRequest(
+    @field:NotBlank(message = "그룹 이름은 필수입니다.")
+    @field:Size(min = 2, max = 20, message = "그룹 이름은 최소 2글자, 최대 20글자여야 합니다.")
+    val newName: String,
+    @field:Min(value = 2, message = "최대 사용자 수는 최소 2명이어야 합니다.")
+    @field:Max(value = 10, message = "최대 사용자 수는 10명까지 가능합니다.")
     val newMax: Int
 )
 

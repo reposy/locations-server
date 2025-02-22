@@ -11,7 +11,6 @@ class GroupService(
     private val groupRepository: GroupRepository
 ) {
 
-
     /**
      * 새로운 그룹을 생성합니다.
      */
@@ -40,10 +39,31 @@ class GroupService(
     }
 
     /**
+     * 그룹 이름과 최대 사용자 수를 동시에 업데이트합니다.
+     */
+    fun updateGroup(groupId: Long, newName: String, newMax: Int): Group {
+        val group = groupRepository.findById(groupId)
+            .orElseThrow { IllegalArgumentException("Group not found") }
+        group.changeName(newName)
+        group.updateMaxUsers(newMax)
+        return groupRepository.save(group)
+    }
+
+    /**
      * 그룹 ID로 그룹 정보를 조회합니다.
      */
     fun getGroupById(groupId: Long): Group {
         return groupRepository.findById(groupId)
             .orElseThrow { IllegalArgumentException("Group not found") }
+    }
+
+    /**
+     * 그룹을 삭제합니다.
+     */
+    fun deleteGroup(groupId: Long): Group {
+        val group = groupRepository.findById(groupId)
+            .orElseThrow { IllegalArgumentException("Group not found") }
+        groupRepository.delete(group)
+        return group
     }
 }

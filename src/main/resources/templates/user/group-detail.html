@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">그룹 상세</title>
+</head>
+<body class="bg-gray-50">
+<div id="groupDetailContainer" class="max-w-lg mx-auto p-4">
+    <!-- 그룹 이름 -->
+    <h1 id="groupName" class="text-3xl font-bold mb-4 text-center">그룹 이름</h1>
+
+    <!-- 내 위치 공유 토글 -->
+    <div class="mb-6 flex items-center justify-center">
+        <label class="flex items-center space-x-2">
+            <span class="text-gray-700">내 위치 공유:</span>
+            <input type="checkbox" id="toggleLocation" class="form-checkbox h-6 w-6 text-green-500">
+        </label>
+    </div>
+
+    <!-- 참여 인원 목록 -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-semibold mb-2">참여 인원</h2>
+        <div id="membersList" class="grid grid-cols-1 gap-4">
+        </div>
+    </div>
+
+    <!-- 지도 영역 -->
+    <div>
+        <h2 class="text-2xl font-semibold mb-2">지도</h2>
+        <div id="groupMap" class="w-full h-64 bg-gray-200 rounded">
+            <!-- 지도 API 연동 예정 -->
+        </div>
+    </div>
+</div>
+</body>
+</html>
