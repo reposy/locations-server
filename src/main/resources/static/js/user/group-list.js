@@ -20,6 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
     eventBus.on('groupUpdated', () => {
         loadGroupList();
     });
+
+    // "groupListRequested" 이벤트가 발생하면 loadGroupList() 실행
+    eventBus.on("groupListRequested", () => {
+        console.log("groupListRequested 이벤트 수신");
+        loadGroupList();
+    });
 });
 
 function loadGroupList() {
@@ -54,9 +60,10 @@ function renderGroupList(groups) {
     groups.forEach(group => {
         const card = document.createElement("div");
         card.className = "group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer";
-        // 그룹 카드 클릭 시, store에 선택된 groupId 저장 후 navigate 이벤트 발생
+        // 그룹 카드 클릭 시, store에 선택된 groupId 저장 후 groupDetailRequested와 navigate 이벤트 발생
         card.onclick = () => {
             store.setSelectedGroupId(group.id);
+            eventBus.emit("groupDetailRequested");
             eventBus.emit("navigate", `/groups/${group.id}`);
         };
 

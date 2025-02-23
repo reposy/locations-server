@@ -36,21 +36,24 @@ const loadNaverMapScript = async (clientId) => {
     });
 };
 
-export const initNaverMap = async () => {
+export const initNaverMap = async (containerId = "map") => {
     try {
-        const clientId = await fetchClientId(); // ✅ 서버에서 clientId 가져오기
+        const clientId = await fetchClientId(); // 서버에서 clientId 가져오기
         if (!clientId) {
-            throw new Error("📌 네이버 지도 Client ID를 가져올 수 없습니다.");
+            throw new Error("네이버 지도 Client ID를 가져올 수 없습니다.");
         }
-
         await loadNaverMapScript(clientId);
 
-        const map = new naver.maps.Map("map", {
+        const mapContainer = document.getElementById(containerId);
+        if (!mapContainer) {
+            throw new Error(`Container ${containerId} not found.`);
+        }
+        const map = new naver.maps.Map(containerId, {
             center: new naver.maps.LatLng(37.3595704, 127.105399),
             zoom: 13,
         });
 
-        console.log("✅ 네이버 지도 초기화 완료");
+        console.log("네이버 지도 초기화 완료");
         return map;
     } catch (error) {
         console.error(error.message);

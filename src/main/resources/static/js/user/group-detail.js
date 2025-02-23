@@ -1,19 +1,17 @@
 import { store } from './store.js';
 import { eventBus } from './eventBus.js';
+import { initNaverMap } from '/js/naver/map/naver-map.js';
 
-export function initGroupDetail() {
-    let groupId = store.getSelectedGroupId();
-    if (!groupId) {
-        console.error("선택된 그룹 ID가 store에 없습니다.");
-        eventBus.on("selectedGroupChanged", (id) => {
-            if (id) {
-                loadGroupDetail(id);
-            }
-        });
-        return;
-    }
-    loadGroupDetail(groupId);
-}
+document.addEventListener("DOMContentLoaded", () => {
+    eventBus.on("groupDetailRequested", () => {
+        const groupId = store.getSelectedGroupId();
+        if (!groupId) {
+            console.error("선택된 그룹 ID가 store에 없습니다.");
+            return;
+        }
+        loadGroupDetail(groupId);
+    });
+});
 
 function loadGroupDetail(groupId) {
     fetch(`/api/groups/${groupId}`, {
@@ -41,7 +39,7 @@ function loadGroupDetail(groupId) {
                 console.error("pageTitle 요소를 찾을 수 없습니다.");
             }
 
-            // 토글은 그룹에 isSharingLocation 필드가 없으므로 기본 false로 처리
+            // 토글: isSharingLocation 필드가 없으므로 기본 false 처리
             const toggleLocationElem = document.getElementById("toggleLocation");
             if (toggleLocationElem) {
                 toggleLocationElem.checked = false;
@@ -49,8 +47,15 @@ function loadGroupDetail(groupId) {
                 console.error("toggleLocation 요소를 찾을 수 없습니다.");
             }
 
-            // 지도 초기화
-            initMap();
+            // 지도 초기화: "groupMap" 컨테이너를 사용하여 네이버 지도 초기화
+            initNaverMap("groupMap").then((map) => {
+                if (!map) {
+                    console.error("네이버 지도 초기화 실패");
+                    return;
+                }
+                console.log("네이버 지도 초기화 완료");
+                // 추가 동작 (예: 마커 추가) 구현 가능
+            });
 
             // 그룹 멤버 목록 로드
             loadGroupMembers(groupId);
@@ -80,7 +85,7 @@ function loadGroupMembers(groupId) {
                     memberDiv.className = "p-4 bg-white rounded shadow";
                     const nameP = document.createElement("p");
                     nameP.className = "font-semibold";
-                    nameP.textContent = member.nickname;  // 멤버 닉네임 표시
+                    nameP.textContent = member.nickname;  // 멤버 닉네임만 표시
                     memberDiv.appendChild(nameP);
                     membersList.appendChild(memberDiv);
                 });
@@ -91,14 +96,4 @@ function loadGroupMembers(groupId) {
         .catch(error => {
             console.error("Error loading group members:", error);
         });
-}
-
-function initMap() {
-    const mapContainer = document.getElementById("groupMap");
-    if (!mapContainer) {
-        console.error("groupMap 컨테이너를 찾을 수 없습니다.");
-        return;
-    }
-    // TODO: 지도 API 초기화 코드 (예: 네이버/카카오 맵 API 연동)
-    console.log("지도 초기화 코드 실행됨");
 }

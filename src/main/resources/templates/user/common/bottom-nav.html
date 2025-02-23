@@ -1,22 +1,16 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<body>
-<!-- bottom-nav fragment 정의 -->
 <div th:fragment="bottomNav">
     <nav class="fixed bottom-0 left-0 right-0 h-16 bg-white shadow-md flex items-center justify-around z-40">
-        <a href="/groups" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+        <button id="btnGroupList" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
             <span class="text-xl">📍</span>
             <span class="text-sm">내 그룹</span>
-        </a>
-        <a href="/profile" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+        </button>
+        <button id="btnProfile" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
             <span class="text-xl">👤</span>
             <span class="text-sm">프로필</span>
-        </a>
-        <a href="/settings" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+        </button>
+        <button id="btnSettings" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
             <span class="text-xl">⚙️</span>
             <span class="text-sm">설정</span>
-        </a>
+        </button>
     </nav>
 </div>
-</body>
-</html>

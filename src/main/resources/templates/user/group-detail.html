@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">그룹 상세</title>
+    <link rel="stylesheet" href="/css/tailwind.css">
 </head>
 <body class="bg-gray-50">
 <div id="groupDetailContainer" class="max-w-lg mx-auto p-4">
@@ -22,6 +22,7 @@
     <div class="mb-6">
         <h2 class="text-2xl font-semibold mb-2">참여 인원</h2>
         <div id="membersList" class="grid grid-cols-1 gap-4">
+            <!-- 멤버 목록은 JS로 동적으로 추가됩니다. -->
         </div>
     </div>
 
@@ -33,5 +34,6 @@
         </div>
     </div>
 </div>
+<!-- index.js에서 해당 콘텐츠가 로드되면 group-detail.js가 함께 실행됩니다. -->
 </body>
 </html>

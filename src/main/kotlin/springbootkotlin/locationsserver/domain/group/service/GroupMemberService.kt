@@ -2,9 +2,9 @@ package springbootkotlin.locationsserver.domain.group.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import springbootkotlin.locationsserver.domain.group.entity.Group
 import springbootkotlin.locationsserver.domain.group.entity.GroupMember
 import springbootkotlin.locationsserver.domain.group.repository.GroupMemberRepository
+import springbootkotlin.locationsserver.domain.group.entity.Group
 import springbootkotlin.locationsserver.domain.user.entity.User
 
 @Service
@@ -19,7 +19,7 @@ class GroupMemberService(
         return groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)
     }
 
-    // 그룹 소유자인지 확인 (수정, 삭제 등 민감한 작업 권한)
+    // 그룹 소유자인지 확인 (수정/삭제 권한)
     fun isOwner(userId: Long, groupId: Long): Boolean {
         val group: Group = groupService.getGroupById(groupId)
         return group.createUser.id == userId
@@ -59,5 +59,12 @@ class GroupMemberService(
             .orElseThrow { IllegalArgumentException("Group member not found with id: $memberId") }
         member.updateSharingStatus(newStatus)
         return groupMemberRepository.save(member)
+    }
+
+    /**
+     * 그룹 멤버를 제거합니다.
+     */
+    fun removeMember(memberId: Long) {
+        groupMemberRepository.deleteById(memberId)
     }
 }

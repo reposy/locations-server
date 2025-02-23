@@ -1,5 +1,4 @@
 import { eventBus } from './eventBus.js';
-import { initGroupDetail } from './group-detail.js';
 
 document.addEventListener("DOMContentLoaded", () => {
     loadContent("/group-list");
@@ -9,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
         link.addEventListener("click", (e) => {
             e.preventDefault();
             const url = link.getAttribute("href");
-            loadContent(url);
+            eventBus.emit("navigate", url);
         });
     });
 
@@ -32,13 +31,13 @@ function loadContent(url) {
         })
         .then(html => {
             document.getElementById("main-content").innerHTML = html;
-            // 콘텐츠 내에 groupList 컨테이너가 있으면 초기화 처리
+            // 콘텐츠 내에 groupList 컨테이너가 있으면 "groupListRequested" 이벤트 발생
             if (document.getElementById("groupList")) {
-                initGroupListEvents();
+                eventBus.emit("groupListRequested");
             }
-            // 콘텐츠 내에 group-detail 관련 요소가 있으면 initGroupDetail() 호출
+            // 콘텐츠 내에 group-detail 관련 요소가 있으면 "groupDetailRequested" 이벤트 발생
             if (document.getElementById("groupName") && document.getElementById("pageTitle")) {
-                initGroupDetail();
+                eventBus.emit("groupDetailRequested");
             }
         })
         .catch(error => {
@@ -48,5 +47,5 @@ function loadContent(url) {
 
 function initGroupListEvents() {
     console.log("initGroupListEvents 실행됨");
-    // 그룹 목록 이벤트 초기화 코드 (필요 시 추가)
+    // 그룹 목록과 관련된 추가 이벤트 바인딩을 이곳에서 처리합니다.
 }

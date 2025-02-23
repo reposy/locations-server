@@ -51,7 +51,6 @@ class GroupApiController(
             maxUsers = request.maxUsers
         )
         val createdGroup = groupService.createGroup(group)
-        // 생성 후, 생성자를 그룹 멤버로 추가 (위치 공유 기본값 true)
         groupMemberService.addMember(createdGroup, user, isSharingLocation = true)
 
         return GroupResponse.fromEntity(createdGroup)
@@ -86,7 +85,7 @@ class GroupApiController(
         return GroupResponse.fromEntity(updatedGroup)
     }
 
-    // 그룹 삭제 엔드포인트: 삭제는 소유자만 가능
+    // 그룹 삭제 엔드포인트: 삭제는 소유자만 가능, 제한적 삭제 적용
     @DeleteMapping("/{groupId}")
     fun deleteGroup(@PathVariable groupId: Long, session: HttpSession): GroupResponse {
         val userInfo = userSessionService.getUserInfo(session)
