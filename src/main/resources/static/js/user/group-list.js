@@ -2,7 +2,12 @@ import { store } from './store.js';
 import { eventBus } from './eventBus.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadGroupList();
+
+    eventBus.on("contentLoaded", (data) => {
+        if (data && data.pageType === "group-list") {
+            loadGroupList();
+        }
+    });
 
     eventBus.on('groupsUpdated', (groups) => {
         renderGroupList(groups);
@@ -56,10 +61,9 @@ function renderGroupList(groups) {
         const card = document.createElement("div");
         card.className = "group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer";
 
-        // 그룹 카드 클릭 시, 선택된 그룹 ID를 store에 저장하고 상세 페이지로 이동 이벤트 발생
+        // 그룹 카드 클릭 시, 선택된 그룹 ID만 store에 저장한 후 상세 페이지로 이동 이벤트 발생
         card.onclick = () => {
             store.setSelectedGroupId(group.id);
-            eventBus.emit("groupDetailRequested");
             eventBus.emit("navigate", `/groups/${group.id}`);
         };
 

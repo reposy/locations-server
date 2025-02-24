@@ -1,4 +1,5 @@
 import { eventBus } from './eventBus.js';
+import { store } from "./store.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -17,7 +18,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 초기 화면은 그룹 목록으로 설정 (서버에서 group-list.html에 data-page="group-list"를 추가)
     eventBus.emit("navigate", "/group-list");
+
+    loadCurrentUser();
 });
+
+async function loadCurrentUser() {
+    try {
+        const response = await fetch('/api/users/me', {
+            headers: { "Accept": "application/json" }
+        });
+        if (!response.ok) {
+            throw new Error("현재 사용자 정보를 불러오지 못했습니다.");
+        }
+        const user = await response.json();
+        // store에 현재 사용자 ID를 저장합니다.
+        store.setState({ currentUserId: user.id });
+        console.log("현재 사용자 정보:", user);
+    } catch (error) {
+        console.error("Error loading current user:", error);
+    }
+}
 
 async function loadContent(url) {
     try {
@@ -31,11 +51,12 @@ async function loadContent(url) {
         const mainContent = document.getElementById("main-content");
         mainContent.innerHTML = html;
 
-        // 만약 HTML에 data-page 속성이 있다면 사용
-        const pageType = mainContent.getAttribute("data-page");
-        // "contentLoaded" 이벤트를 발생시켜 각 모듈에서 처리하도록 함
-        const event = new CustomEvent("contentLoaded", { detail: { pageType, url } });
-        document.dispatchEvent(event);
+        // mainContent 내부에서 data-page 속성이 설정된 첫 번째 요소를 찾음
+        const containerWithPage = mainContent.querySelector("[data-page]");
+        const pageType = containerWithPage ? containerWithPage.getAttribute("data-page") : null;
+
+        // "contentLoaded" 이벤트를 발생시켜 각 모듈에서 초기화 작업을 진행하도록 함
+        eventBus.emit("contentLoaded", { pageType, url });
     } catch (error) {
         console.error("Error loading content:", error);
     }

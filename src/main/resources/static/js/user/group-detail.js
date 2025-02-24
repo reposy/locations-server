@@ -2,34 +2,67 @@ import { store } from './store.js';
 import { eventBus } from './eventBus.js';
 import { initNaverMap } from '/js/naver/map/naver-map.js';
 import { createMarker } from '/js/user/common/mapMarker.js';
+import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic } from '/js/user/common/websocket.js';
+import { startLocationWatch, stopLocationWatch } from './locationUpdater.js';
 
-let myLocationMarker = null;
-let locationIntervalId = null;
+let groupMarkers = {}; // 그룹 내 다른 사용자 마커 저장
 
-eventBus.on("groupDetailRequested", async () => {
-    const groupId = store.getSelectedGroupId();
-    if (!groupId) {
-        console.error("선택된 그룹 ID가 store에 없습니다.");
+// contentLoaded 이벤트를 통해 페이지 타입을 감지하여 처리합니다.
+eventBus.on("contentLoaded", async (data) => {
+    if (data && data.pageType === "group-detail") {
+        const groupId = store.getSelectedGroupId();
+        if (!groupId) {
+            console.error("선택된 그룹 ID가 store에 없습니다.");
+            return;
+        }
+        await loadGroupDetail(groupId);
+
+        // WebSocket 초기화 및 그룹 토픽 구독
+        try {
+            const stompClient = await initWebSocket();
+            if (stompClient && stompClient.connected) {
+                subscribeToGroupTopic(groupId, handleLocationUpdate);
+            }
+        } catch (err) {
+            console.error("WebSocket 초기화 실패:", err);
+        }
+    } else {
+        // 그룹 상세 페이지가 아니라면 WebSocket 연결 해제
+        disconnectWebSocket();
+    }
+});
+
+// WebSocket 메시지 처리: 위치 업데이트 수신
+function handleLocationUpdate(update) {
+    console.log("WebSocket 위치 업데이트 수신:", update);
+    const naverObj = store.getNaver();
+    const map = store.getNaverMap();
+    if (!naverObj || !map) {
+        console.error("네이버 지도 관련 객체가 없습니다.");
         return;
     }
-    await loadGroupDetail(groupId);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    // 내 위치 공유 토글 이벤트 처리
-    const toggleLocationElem = document.getElementById("toggleLocation");
-    if (toggleLocationElem) {
-        toggleLocationElem.addEventListener("change", (e) => {
-            if (e.target.checked) {
-                startLocationWatch();
-            } else {
-                stopLocationWatch();
-            }
-        });
+    const newPos = new naverObj.maps.LatLng(update.latitude, update.longitude);
+    if (update.isMine) {
+        // 내 위치 업데이트는 locationUpdater.js에서 처리하므로 여기서는 생략
+        console.log("내 위치 업데이트는 locationUpdater에서 처리됩니다.");
     } else {
-        console.warn("toggleLocation 요소를 찾을 수 없습니다.");
+        const markerColor = "#00FF00"; // 타 사용자: 녹색
+        if (groupMarkers[update.userId]) {
+            groupMarkers[update.userId].setPosition(newPos);
+            console.log(`사용자 ${update.userId} 마커 업데이트 (WebSocket)`);
+        } else {
+            const marker = createMarker(map, {
+                latitude: update.latitude,
+                longitude: update.longitude,
+                markerType: "default",
+                markerColor: markerColor,
+                nickname: update.nickname || "멤버 위치"
+            });
+            groupMarkers[update.userId] = marker;
+            console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
+        }
     }
-});
+}
 
 async function loadGroupDetail(groupId) {
     try {
@@ -42,12 +75,14 @@ async function loadGroupDetail(groupId) {
         const data = await response.json();
         console.log("그룹 상세 API 응답 데이터:", data);
 
+        // 그룹 이름 업데이트
         const groupNameElem = document.getElementById("groupName");
         if (groupNameElem) {
             groupNameElem.textContent = data.name || "이름 없음";
         } else {
             console.error("groupName 요소를 찾을 수 없습니다.");
         }
+        // 페이지 타이틀 업데이트 (pageTitle 요소가 있으면 사용, 없으면 document.title)
         const pageTitleElem = document.getElementById("pageTitle");
         if (pageTitleElem) {
             pageTitleElem.textContent = `${data.name || "이름 없음"} - 그룹 상세`;
@@ -55,26 +90,31 @@ async function loadGroupDetail(groupId) {
             document.title = `${data.name || "이름 없음"} - 그룹 상세`;
         }
 
-        // toggleLocation 요소가 동적으로 로드된 후 이벤트 리스너 등록
+        // toggleLocation 요소 이벤트 재등록
         const toggleLocationElem = document.getElementById("toggleLocation");
         if (toggleLocationElem) {
             toggleLocationElem.removeEventListener("change", toggleLocationHandler);
             toggleLocationElem.addEventListener("change", toggleLocationHandler);
+            // 기본값 false (서버에 isSharingLocation 필드가 없으므로)
             toggleLocationElem.checked = false;
         } else {
             console.warn("toggleLocation 요소를 찾을 수 없습니다.");
         }
 
-        let map = store.getNaverMap();
-        if (!map) {
-            map = await initNaverMap("groupMap");
-            if (!map) {
-                console.error("네이버 지도 초기화 실패");
-                return;
-            }
-            store.setNaverMap(map);
-            store.setNaver(window.naver);
+        // 그룹 상세 페이지의 새로운 지도 컨테이너 "groupMap"이 새로 생성되었으므로
+        // 기존 지도 인스턴스는 더 이상 유효하지 않으므로 새로 초기화합니다.
+        const mapContainer = document.getElementById("groupMap");
+        if (!mapContainer) {
+            console.error("groupMap 컨테이너를 찾을 수 없습니다.");
+            return;
         }
+        const map = await initNaverMap("groupMap"); // 항상 새 인스턴스로 초기화
+        if (!map) {
+            console.error("네이버 지도 초기화 실패");
+            return;
+        }
+        store.setNaverMap(map);
+        store.setNaver(window.naver);
         console.log("네이버 지도 초기화 완료");
 
         await loadGroupMembers(groupId);
@@ -118,62 +158,5 @@ function toggleLocationHandler(e) {
         startLocationWatch();
     } else {
         stopLocationWatch();
-    }
-}
-
-/* 실시간 위치 공유 관련 함수 (10초마다 갱신) */
-async function startLocationWatch() {
-    if (!navigator.geolocation) {
-        console.error("Geolocation API를 지원하지 않습니다.");
-        return;
-    }
-    if (locationIntervalId !== null) {
-        console.log("이미 위치 감시 중입니다.");
-        return;
-    }
-
-    console.log("startLocationWatch 시작됨");
-    locationIntervalId = setInterval(() => {
-        console.log("10초 간격 위치 요청 중...");
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                console.log("실시간 위치:", latitude, longitude);
-                const naverObj = store.getNaver();
-                if (!naverObj) {
-                    console.error("글로벌 naver 객체가 store에 없습니다.");
-                    return;
-                }
-                const newPos = new naverObj.maps.LatLng(latitude, longitude);
-                if (myLocationMarker) {
-                    myLocationMarker.setPosition(newPos);
-                    console.log("마커 위치 업데이트");
-                } else if (store.getNaverMap()) {
-                    myLocationMarker = createMarker(store.getNaverMap(), {
-                        latitude,
-                        longitude,
-                        markerType: "default",
-                        markerColor: "#FF0000",
-                        nickname: "내 위치"
-                    });
-                    console.log("마커 생성");
-                }
-            },
-            (error) => {
-                console.error("실시간 위치 추적 에러:", error);
-            },
-            { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
-        );
-    }, 10000);
-}
-
-function stopLocationWatch() {
-    if (locationIntervalId !== null) {
-        clearInterval(locationIntervalId);
-        locationIntervalId = null;
-    }
-    if (myLocationMarker) {
-        myLocationMarker.setMap(null);
-        myLocationMarker = null;
     }
 }
