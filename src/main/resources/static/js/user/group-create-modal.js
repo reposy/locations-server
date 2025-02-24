@@ -1,4 +1,3 @@
-// 파일 경로: /static/js/user/group-create-modal.js
 import { eventBus } from './eventBus.js';
 
 document.addEventListener("DOMContentLoaded", () => {

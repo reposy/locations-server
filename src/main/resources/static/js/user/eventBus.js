@@ -1,17 +1,15 @@
-class EventBus {
-    constructor() {
-        this.events = {};
-    }
-    on(event, callback) {
-        if (!this.events[event]) {
-            this.events[event] = [];
+const events = {};
+
+export const eventBus = {
+    on(event, listener) {
+        if (!events[event]) {
+            events[event] = [];
         }
-        this.events[event].push(callback);
-    }
-    emit(event, data) {
-        if (this.events[event]) {
-            this.events[event].forEach(callback => callback(data));
+        events[event].push(listener);
+    },
+    emit(event, payload) {
+        if (events[event]) {
+            events[event].forEach(listener => listener(payload));
         }
     }
-}
-export const eventBus = new EventBus();
+};

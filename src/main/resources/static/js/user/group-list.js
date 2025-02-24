@@ -28,26 +28,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function loadGroupList() {
+async function loadGroupList() {
     console.log("loadGroupList 호출됨");
-    fetch('/api/groups/my', {
-        headers: {
-            "Accept": "application/json"
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Failed to fetch group list");
-            }
-            return response.json();
-        })
-        .then(groups => {
-            console.log("API로부터 그룹 목록 수신", groups);
-            store.setGroups(groups);
-        })
-        .catch(error => {
-            console.error("Error loading group list:", error);
+    try {
+        const response = await fetch('/api/groups/my', {
+            headers: { "Accept": "application/json" }
         });
+        if (!response.ok) {
+            throw new Error("Failed to fetch group list");
+        }
+        const groups = await response.json();
+        console.log("API로부터 그룹 목록 수신", groups);
+        store.setGroups(groups);
+    } catch (error) {
+        console.error("Error loading group list:", error);
+    }
 }
 
 function renderGroupList(groups) {
@@ -60,7 +55,8 @@ function renderGroupList(groups) {
     groups.forEach(group => {
         const card = document.createElement("div");
         card.className = "group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer";
-        // 그룹 카드 클릭 시, store에 선택된 groupId 저장 후 groupDetailRequested와 navigate 이벤트 발생
+
+        // 그룹 카드 클릭 시, 선택된 그룹 ID를 store에 저장하고 상세 페이지로 이동 이벤트 발생
         card.onclick = () => {
             store.setSelectedGroupId(group.id);
             eventBus.emit("groupDetailRequested");
@@ -108,9 +104,7 @@ function renderGroupList(groups) {
             if (confirm("정말 삭제하시겠습니까?")) {
                 fetch(`/api/groups/${group.id}`, {
                     method: "DELETE",
-                    headers: {
-                        "Accept": "application/json"
-                    }
+                    headers: { "Accept": "application/json" }
                 })
                     .then(response => {
                         if (!response.ok) {
@@ -176,3 +170,5 @@ function openUpdateModal(group) {
     document.getElementById("updateMaxUsers").value = group.maxUsers;
     updateModal.classList.remove("hidden");
 }
+
+export { loadGroupList, renderGroupList, bindCreateGroupBtn, openUpdateModal };

@@ -3,7 +3,11 @@ import { eventBus } from './eventBus.js';
 export const store = {
     state: {
         groups: [],
-        selectedGroupId: null
+        selectedGroupId: null,
+        naverMap: null,    // 생성된 네이버 지도 인스턴스
+        naver: null,       // 전역 naver 객체
+        locationFormData: {},
+        savedLocations: []
     },
     setGroups(groups) {
         this.state.groups = groups;
@@ -18,5 +22,25 @@ export const store = {
     },
     getSelectedGroupId() {
         return this.state.selectedGroupId;
+    },
+    setNaverMap(map) {
+        this.state.naverMap = map;
+        eventBus.emit('naverMapReady', map);
+    },
+    getNaverMap() {
+        return this.state.naverMap;
+    },
+    setNaver(naverObj) {
+        this.state.naver = naverObj;
+    },
+    getNaver() {
+        return this.state.naver;
+    },
+    setState(newState) {
+        this.state = { ...this.state, ...newState };
+        eventBus.emit('stateUpdated', this.state);
+    },
+    getState() {
+        return this.state;
     }
 };

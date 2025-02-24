@@ -1,7 +1,6 @@
 import { eventBus } from './eventBus.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadContent("/group-list");
 
     // 내비게이션 링크 이벤트 (예시)
     document.querySelectorAll("a.nav-link").forEach(link => {
@@ -15,37 +14,29 @@ document.addEventListener("DOMContentLoaded", () => {
     eventBus.on("navigate", (url) => {
         loadContent(url);
     });
+
+    // 초기 화면은 그룹 목록으로 설정 (서버에서 group-list.html에 data-page="group-list"를 추가)
+    eventBus.emit("navigate", "/group-list");
 });
 
-function loadContent(url) {
-    fetch(url, {
-        headers: {
-            "X-Requested-With": "XMLHttpRequest"
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return response.text();
-        })
-        .then(html => {
-            document.getElementById("main-content").innerHTML = html;
-            // 콘텐츠 내에 groupList 컨테이너가 있으면 "groupListRequested" 이벤트 발생
-            if (document.getElementById("groupList")) {
-                eventBus.emit("groupListRequested");
-            }
-            // 콘텐츠 내에 group-detail 관련 요소가 있으면 "groupDetailRequested" 이벤트 발생
-            if (document.getElementById("groupName") && document.getElementById("pageTitle")) {
-                eventBus.emit("groupDetailRequested");
-            }
-        })
-        .catch(error => {
-            console.error("Error loading content:", error);
+async function loadContent(url) {
+    try {
+        const response = await fetch(url, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
         });
-}
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+        const html = await response.text();
+        const mainContent = document.getElementById("main-content");
+        mainContent.innerHTML = html;
 
-function initGroupListEvents() {
-    console.log("initGroupListEvents 실행됨");
-    // 그룹 목록과 관련된 추가 이벤트 바인딩을 이곳에서 처리합니다.
+        // 만약 HTML에 data-page 속성이 있다면 사용
+        const pageType = mainContent.getAttribute("data-page");
+        // "contentLoaded" 이벤트를 발생시켜 각 모듈에서 처리하도록 함
+        const event = new CustomEvent("contentLoaded", { detail: { pageType, url } });
+        document.dispatchEvent(event);
+    } catch (error) {
+        console.error("Error loading content:", error);
+    }
 }
