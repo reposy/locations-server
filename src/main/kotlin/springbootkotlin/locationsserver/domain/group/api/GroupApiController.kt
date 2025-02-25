@@ -118,6 +118,8 @@ data class UpdateGroupRequest(
 data class GroupResponse(
     val id: Long?,
     val createUserId: Long,
+    val createUserNickname: String?,
+    val memberCount: Long?,
     val name: String,
     val maxUsers: Int,
     val createdAt: String?,
@@ -128,6 +130,8 @@ data class GroupResponse(
             return GroupResponse(
                 id = group.id,
                 createUserId = group.createUser.id,
+                createUserNickname = group.createUser.nickname,
+                memberCount = group.members.size.toLong(),
                 name = group.name,
                 maxUsers = group.maxUsers,
                 createdAt = group.createdAt.toString(),

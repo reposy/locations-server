@@ -2,6 +2,7 @@ package springbootkotlin.locationsserver.domain.auth.user.signout.api
 
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -14,7 +15,7 @@ class UserSignOutApiController(
     private val userSignOutService: UserSignOutService
 ) {
 
-    @PostMapping("")
+    @GetMapping("")
     fun userSignOut(request: HttpServletRequest): ResponseEntity<UserSignOutResponse> {
 
         userSignOutService.userSignOut(request)

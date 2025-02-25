@@ -6,7 +6,12 @@ import java.time.LocalDateTime
 import springbootkotlin.locationsserver.infrastructure.config.entity.AuditableEntity
 
 @Entity
-@Table(name = "user_invitation")
+@Table(
+    name = "user_invitation",
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["group_id", "from_user_id", "to_user_id"])
+    ]
+)
 class UserInvitation(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

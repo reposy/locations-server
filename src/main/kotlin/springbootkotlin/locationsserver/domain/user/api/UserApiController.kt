@@ -6,11 +6,13 @@ import org.springframework.web.bind.annotation.*
 import springbootkotlin.locationsserver.domain.user.entity.User
 import springbootkotlin.locationsserver.domain.user.service.UserService
 import springbootkotlin.locationsserver.domain.auth.user.dto.UserInfoDTO
+import springbootkotlin.locationsserver.domain.auth.user.session.UserSessionService
 
 @RestController
 @RequestMapping("/api/users")
 class UserApiController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val sessionService: UserSessionService
 ) {
 
     @PostMapping
@@ -51,6 +53,19 @@ class UserApiController(
         val user = userService.findById(userInfo.id)
             ?: throw IllegalArgumentException("User not found with id: ${userInfo.id}")
         return UserResponse.fromEntity(user)
+    }
+
+    // 추가: 그룹에 속하지 않은 사용자 검색
+    @GetMapping("/search")
+    fun searchUsers(
+        @RequestParam query: String,
+        @RequestParam groupId: Long,
+        session: HttpSession
+    ): List<UserResponse> {
+        val userInfo = sessionService.getUserInfo(session)
+        val currentUserId = userInfo.id
+        val users = userService.searchUsersNotInGroup(query, groupId, currentUserId)
+        return users.map { UserResponse.fromEntity(it) }
     }
 }
 

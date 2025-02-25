@@ -19,7 +19,12 @@ class Group(
     var name: String,
 
     @Column(name = "max_users", nullable = false)
-    var maxUsers: Int
+    var maxUsers: Int,
+
+    // 양방향 연관관계: 그룹에 속한 멤버들
+    @OneToMany(mappedBy = "group")
+    var members: MutableList<GroupMember> = mutableListOf()
+
 ) : AuditableEntity() {
 
     /**

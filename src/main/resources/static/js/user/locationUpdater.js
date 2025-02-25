@@ -38,8 +38,9 @@ function updateMyLocation(latitude, longitude) {
         console.log("내 위치 마커 생성");
     }
     // 현재 사용자 ID는 store에서 관리 (없으면 기본 1 사용)
-    const currentUserId = store.getState().currentUserId || 1;
-    sendLocationUpdate({ userId: currentUserId, latitude, longitude });
+    const groupId = store.getSelectedGroupId();
+    const currentUserId = store.getState().currentUserId;
+    sendLocationUpdate({ groupId, userId: currentUserId, latitude, longitude });
 }
 
 /* 실시간 위치 공유 관련 함수 (10초마다 갱신, 최초 즉시 실행) */

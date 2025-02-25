@@ -38,4 +38,10 @@ class UserService(
         user.lastLoginedAt = LocalDateTime.now()
         return userRepository.save(user)
     }
+
+    // 추가: 그룹에 속하지 않은 사용자를 검색하는 메서드
+    @Transactional(readOnly = true)
+    fun searchUsersNotInGroup(query: String, groupId: Long, currentUserId: Long): List<User> {
+        return userRepository.searchUsersNotInGroup(query, currentUserId, groupId)
+    }
 }

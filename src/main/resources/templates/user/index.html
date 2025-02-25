@@ -24,6 +24,10 @@
 <div th:replace="user/group-create-modal :: groupCreateModal"></div>
 <!-- 모달 프래그먼트: 그룹 수정 -->
 <div th:replace="user/group-update-modal :: groupUpdateModal"></div>
+<!-- 모달 프래그먼트: 그룹 초대 -->
+<div th:replace="user/group-invite-modal :: groupInviteModal"></div>
+<!-- 모달 프래그먼트: 그룹 초대 확인 -->
+<div th:replace="user/group-invitation-modal :: groupInvitationModal"></div>
 
 <!-- 공통 스크립트 -->
 <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
@@ -34,6 +38,8 @@
 <script type="module" src="/js/user/group-detail.js" defer></script>
 <script type="module" src="/js/user/group-create-modal.js" defer></script>
 <script type="module" src="/js/user/group-update-modal.js" defer></script>
+<script type="module" src="/js/user/group-invite-modal.js" defer></script>
+<script type="module" src="/js/user/group-invitation-modal.js" defer></script>
 <script type="module" src="/js/user/common/bottom-nav.js" defer></script>
 </body>
 </html>

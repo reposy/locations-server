@@ -26,6 +26,14 @@ eventBus.on("contentLoaded", async (data) => {
         } catch (err) {
             console.error("WebSocket 초기화 실패:", err);
         }
+        const openGroupInviteModalBtn = document.getElementById("openGroupInviteModalBtn");
+        if (openGroupInviteModalBtn) {
+            openGroupInviteModalBtn.addEventListener("click", () => {
+                eventBus.emit("openGroupInviteModal");
+            });
+        } else {
+            console.error("openGroupInviteModalBtn not found");
+        }
     } else {
         // 그룹 상세 페이지가 아니라면 WebSocket 연결 해제
         disconnectWebSocket();
@@ -42,25 +50,28 @@ function handleLocationUpdate(update) {
         return;
     }
     const newPos = new naverObj.maps.LatLng(update.latitude, update.longitude);
-    if (update.isMine) {
-        // 내 위치 업데이트는 locationUpdater.js에서 처리하므로 여기서는 생략
+    const currentUserId = store.getState().currentUserId;
+    // 현재 사용자의 위치 업데이트는 locationUpdater.js에서 처리하므로,
+    // 여기서는 다른 사용자의 위치만 처리합니다.
+    if (update.userId === currentUserId) {
         console.log("내 위치 업데이트는 locationUpdater에서 처리됩니다.");
+        return;
+    }
+    // 타 사용자: 녹색 마커
+    const markerColor = "#00FF00";
+    if (groupMarkers[update.userId]) {
+        groupMarkers[update.userId].setPosition(newPos);
+        console.log(`사용자 ${update.userId} 마커 업데이트 (WebSocket)`);
     } else {
-        const markerColor = "#00FF00"; // 타 사용자: 녹색
-        if (groupMarkers[update.userId]) {
-            groupMarkers[update.userId].setPosition(newPos);
-            console.log(`사용자 ${update.userId} 마커 업데이트 (WebSocket)`);
-        } else {
-            const marker = createMarker(map, {
-                latitude: update.latitude,
-                longitude: update.longitude,
-                markerType: "default",
-                markerColor: markerColor,
-                nickname: update.nickname || "멤버 위치"
-            });
-            groupMarkers[update.userId] = marker;
-            console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
-        }
+        const marker = createMarker(map, {
+            latitude: update.latitude,
+            longitude: update.longitude,
+            markerType: "default",
+            markerColor: markerColor,
+            nickname: update.nickname || "멤버 위치"
+        });
+        groupMarkers[update.userId] = marker;
+        console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
     }
 }
 
