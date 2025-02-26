@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Header Fragment</title>
+    <!-- 필요시 CSS, JS 파일 포함 -->
+</head>
 <body>
 <!-- header fragment 정의 (사이드 메뉴 포함) -->
 <header th:fragment="header">
@@ -7,8 +12,9 @@
         <!-- 왼쪽: 뒤로가기 버튼 -->
         <div id="backButton" class="flex items-center">
             <button class="focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
             </button>
         </div>
@@ -16,55 +22,54 @@
         <div class="flex-grow text-center">
             <a th:href="@{/}" class="text-2xl font-bold text-blue-600">디야</a>
         </div>
-        <!-- 오른쪽: 사이드 메뉴 토글 버튼 -->
-        <div>
+        <!-- 오른쪽: 초대 목록 버튼(벨 아이콘) 및 사이드 메뉴 토글 버튼 -->
+        <div class="flex items-center space-x-4">
+            <!-- 초대 목록 버튼: 받은 초대 목록 모달을 열기 위해 eventBus를 사용 -->
+            <!-- 종 모양 버튼 (배지 포함) -->
+            <button id="openInvitationsBtn" class="relative focus:outline-none">
+                <!-- 종 아이콘 (SVG) -->
+                <svg
+                        class="h-6 w-6 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118
+         14.158V11a6.002 6.002 0 00-4-5.659V5a2 2
+         0 10-4 0v.341C8.67 6.165 8 7.388 8 8.75v5.408
+         c0 .538-.214 1.055-.595 1.436L6 17h9"
+                    />
+                </svg>
+
+                <!-- 배지(숫자) 영역: 처음에는 hidden 처리 -->
+                <span
+                        id="inviteBadge"
+                        class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2
+           bg-red-600 text-white text-xs font-bold rounded-full
+           w-5 h-5 flex items-center justify-center hidden"
+                >
+    0
+  </span>
+            </button>
+
+
+            <!-- 사이드 메뉴 토글 버튼 -->
             <button id="openSideMenu" class="focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
         </div>
     </div>
 
-    <!-- 헤더 내부 사이드 메뉴 -->
-    <div id="sideMenu" class="fixed top-0 right-0 w-64 h-full bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50">
-        <div class="p-4 border-b flex justify-between items-center">
-            <h2 class="text-xl font-bold">Menu</h2>
-            <button id="closeSideMenu" class="focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <div class="p-4">
-            <ul>
-                <li class="mb-4">
-                    <a href="/profile" class="flex items-center text-blue-500 hover:underline p-2">
-                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.88 6.196M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        내 정보
-                    </a>
-                </li>
-                <li class="mb-4" id="invitationsBtn">
-                    <a href="/invitations" class="flex items-center text-blue-500 hover:underline p-2">
-                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8a6 6 0 01-12 0m12 0a6 6 0 00-12 0m12 0v8m-12-8v8" />
-                        </svg>
-                        초대 목록
-                    </a>
-                </li>
-                <li class="mb-4" id="signOutBtn">
-                    <a href="/signout" class="flex items-center text-blue-500 hover:underline p-2">
-                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
-                        </svg>
-                        로그아웃
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
+    <!-- 사이드 메뉴 포함 (sidemenu.html 프래그먼트) -->
+    <div th:replace="user/common/sidemenu :: sidemenu"></div>
 </header>
 </body>
 </html>

@@ -52,24 +52,33 @@ class UserInvitationApiController(
     }
 
     @PutMapping("/{invitationId}/accept")
-    fun acceptInvitation(@PathVariable invitationId: Long, session: HttpSession): UserInvitationResponse {
-
-        val invitation = userInvitationService.acceptInvitation(invitationId)
+    fun acceptInvitation(
+        @PathVariable invitationId: Long,
+        session: HttpSession
+    ): UserInvitationResponse {
         val userInfo = sessionService.getUserInfo(session)
-        if(userInfo.id != invitation.toUser.id)
-            throw IllegalArgumentException("잘못된 요청입니다. ${invitation.fromUser.id}, ${userInfo.id}")
+        val invitation = userInvitationService.getUserInvitationById(invitationId)
+            ?: throw IllegalArgumentException("Invitation not found with id: $invitationId")
+        if (userInfo.id != invitation.toUser.id)
+            throw IllegalArgumentException("잘못된 요청입니다. 세션 사용자와 초대받은 사용자가 다릅니다.")
 
-        return UserInvitationResponse.fromEntity(invitation)
+        val updatedInvitation = userInvitationService.acceptInvitation(invitationId)
+        return UserInvitationResponse.fromEntity(updatedInvitation)
     }
 
     @PutMapping("/{invitationId}/decline")
-    fun declineInvitation(@PathVariable invitationId: Long, session: HttpSession): UserInvitationResponse {
-
-        val invitation = userInvitationService.declineInvitation(invitationId)
+    fun declineInvitation(
+        @PathVariable invitationId: Long,
+        session: HttpSession
+    ): UserInvitationResponse {
         val userInfo = sessionService.getUserInfo(session)
-        if(userInfo.id != invitation.toUser.id)
-            throw IllegalArgumentException("잘못된 요청입니다. ${invitation.fromUser.id}, ${userInfo.id}")
-        return UserInvitationResponse.fromEntity(invitation)
+        val invitation = userInvitationService.getUserInvitationById(invitationId)
+            ?: throw IllegalArgumentException("Invitation not found with id: $invitationId")
+        if (userInfo.id != invitation.toUser.id)
+            throw IllegalArgumentException("잘못된 요청입니다. 세션 사용자와 초대받은 사용자가 다릅니다.")
+
+        val updatedInvitation = userInvitationService.declineInvitation(invitationId)
+        return UserInvitationResponse.fromEntity(updatedInvitation)
     }
 
     @GetMapping("/received")
@@ -97,19 +106,19 @@ data class UserInvitationResponse(
     val fromUserNickname: String,
     val toUserId: Long,
     val status: InvitationStatus,
-    val sentAt: String
+    val sentAt: String,
 ) {
     companion object {
         fun fromEntity(entity: UserInvitation): UserInvitationResponse {
             return UserInvitationResponse(
                 id = entity.id,
-                groupId = entity.group.id!!,
+                groupId = entity.group.id,
                 groupName = entity.group.name,
                 fromUserId = entity.fromUser.id,
                 fromUserNickname = entity.fromUser.nickname,
                 toUserId = entity.toUser.id,
                 status = entity.status,
-                sentAt = entity.sentAt.toString()
+                sentAt = entity.sentAt.toString(),
             )
         }
     }

@@ -15,7 +15,7 @@ import springbootkotlin.locationsserver.infrastructure.config.entity.AuditableEn
 class UserInvitation(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    var id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
@@ -53,5 +53,5 @@ class UserInvitation(
 }
 
 enum class InvitationStatus {
-    PENDING, ACCEPTED, DECLINED
+    PENDING, ACCEPTED, DECLINED, DUPLICATE_DECLIEND
 }

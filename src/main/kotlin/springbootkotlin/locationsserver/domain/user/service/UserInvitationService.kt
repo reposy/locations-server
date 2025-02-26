@@ -37,6 +37,18 @@ class UserInvitationService(
     fun acceptInvitation(invitationId: Long): UserInvitation {
         val invitation = userInvitationRepository.findById(invitationId)
             .orElseThrow { IllegalArgumentException("Invitation not found") }
+
+        // 이미 그룹원인지 검사
+        val alreadyMember = groupMemberService.isMember(invitation.toUser.id, invitation.group.id)
+        if (alreadyMember) {
+            // 이미 가입되어 있다면 상태를 DECLINED로 바꾸고 저장
+            invitation.status = InvitationStatus.DUPLICATE_DECLIEND
+            userInvitationRepository.save(invitation)
+            // 여기서 return - 이미 DECLINED 된 invitation을 반환
+            return invitation
+        }
+
+        // 아직 그룹 미가입인 경우 -> 정상 수락 처리
         invitation.status = InvitationStatus.ACCEPTED
         groupMemberService.addMember(invitation.group, invitation.toUser, isSharingLocation = false)
         return userInvitationRepository.save(invitation)

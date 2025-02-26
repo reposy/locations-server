@@ -150,15 +150,63 @@ async function loadGroupMembers(groupId) {
             return;
         }
         membersList.innerHTML = '';
+
+        // 대표 멤버(예: 첫 번째 멤버)와 토글 아이콘을 포함하는 컨테이너 생성
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "flex items-center justify-between p-2 bg-white rounded shadow";
+
+        // 대표 멤버 이름 표시 (예: 첫 번째 멤버)
+        if (members.length > 0) {
+            const repName = document.createElement("span");
+            repName.textContent = members[0].nickname;
+            repName.className = "font-semibold";
+            headerDiv.appendChild(repName);
+        } else {
+            // 멤버가 없는 경우
+            const emptyMsg = document.createElement("span");
+            emptyMsg.textContent = "참여 인원이 없습니다.";
+            headerDiv.appendChild(emptyMsg);
+        }
+
+        // 토글 버튼: 삼각형 아이콘
+        const toggleBtn = document.createElement("button");
+        toggleBtn.className = "focus:outline-none";
+        // 기본은 삼각형 아래 아이콘 (전체 목록 보임을 암시)
+        toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>`;
+        headerDiv.appendChild(toggleBtn);
+
+        // 부가: 전체 목록을 담을 드롭다운 컨테이너 (초기엔 숨김)
+        const dropdown = document.createElement("div");
+        dropdown.className = "mt-2 border border-gray-200 rounded hidden";
         members.forEach(member => {
-            const memberDiv = document.createElement("div");
-            memberDiv.className = "p-4 bg-white rounded shadow";
-            const nameP = document.createElement("p");
-            nameP.className = "font-semibold";
-            nameP.textContent = member.nickname;
-            memberDiv.appendChild(nameP);
-            membersList.appendChild(memberDiv);
+            const item = document.createElement("div");
+            item.className = "p-2 hover:bg-gray-100";
+            item.textContent = member.nickname;
+            dropdown.appendChild(item);
         });
+
+        // 토글 버튼 클릭 시 드롭다운 표시/숨김 토글
+        toggleBtn.addEventListener("click", () => {
+            if (dropdown.classList.contains("hidden")) {
+                dropdown.classList.remove("hidden");
+                // 아이콘을 위쪽 삼각형으로 변경
+                toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                  </svg>`;
+            } else {
+                dropdown.classList.add("hidden");
+                // 아이콘을 다시 아래쪽 삼각형으로 변경
+                toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>`;
+            }
+        });
+
+        // 전체 멤버 렌더링: 대표 정보와 드롭다운을 membersList에 추가
+        membersList.appendChild(headerDiv);
+        membersList.appendChild(dropdown);
     } catch (error) {
         console.error("Error loading group members:", error);
     }

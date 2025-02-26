@@ -8,7 +8,8 @@ export const store = {
         naver: null,       // 전역 naver 객체
         locationFormData: {},
         savedLocations: [],
-        stompClient: null  // WebSocket(STOMP) 클라이언트
+        stompClient: null,  // WebSocket(STOMP) 클라이언트
+        invitations: []    // 초대 목록을 저장할 필드 추가
     },
     setGroups(groups) {
         this.state.groups = groups;
