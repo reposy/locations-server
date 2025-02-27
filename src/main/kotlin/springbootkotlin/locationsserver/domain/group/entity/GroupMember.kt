@@ -10,7 +10,7 @@ import springbootkotlin.locationsserver.domain.user.entity.User
 class GroupMember(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    var id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)

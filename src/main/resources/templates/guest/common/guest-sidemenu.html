@@ -1,0 +1,32 @@
+<div th:fragment="guestSidemenu" id="guestSideMenu" class="fixed top-0 right-0 w-64 h-full bg-white shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+    <div class="p-4 border-b flex justify-between items-center">
+        <h2 class="text-xl font-bold">메뉴</h2>
+        <button id="guestCloseSideMenu" class="focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    <div class="p-4">
+        <ul>
+            <li class="mb-4">
+                <a href="/signup" class="flex items-center text-blue-500 hover:underline p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                        <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    회원가입
+                </a>
+            </li>
+            <li class="mb-4">
+                <a href="/login" class="flex items-center text-blue-500 hover:underline p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9V5a2 2 0 012-2h4a2 2 0 012 2v4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 14l5-5m0 0l-5-5m5 5H9" />
+                    </svg>
+                    로그인
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

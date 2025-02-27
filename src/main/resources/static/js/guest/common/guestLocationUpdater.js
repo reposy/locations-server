@@ -1,8 +1,6 @@
-// 파일 경로: /js/user/locationUpdater.js
-
-import { store } from './store.js';
-import { createMarker } from '/js/user/common/mapMarker.js';
-import { sendLocationUpdate } from '/js/user/common/websocket.js';
+import { store } from '../guest-store.js';
+import { createMarker } from '../../naver/map/mapMarker.js';
+import { sendLocationUpdate } from '../../service/websocketService.js';
 
 let myLocationMarker = null;
 let locationIntervalId = null;
@@ -37,10 +35,10 @@ function updateMyLocation(latitude, longitude) {
         });
         console.log("내 위치 마커 생성");
     }
-    // 현재 사용자 ID는 store에서 관리 (없으면 기본 1 사용)
-    const groupId = store.getSelectedGroupId();
-    const currentUserId = store.getState().currentUserId;
-    sendLocationUpdate({ groupId, userId: currentUserId, latitude, longitude });
+    // 현재 사용자 ID는 store에서 관리
+    const groupId = store.getState().groupId;
+    const guestId = store.getState().guestId;
+    sendLocationUpdate({ groupId, userId: guestId, latitude, longitude });
 }
 
 /* 실시간 위치 공유 관련 함수 (10초마다 갱신, 최초 즉시 실행) */

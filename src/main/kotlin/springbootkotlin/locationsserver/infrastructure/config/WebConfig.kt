@@ -14,9 +14,11 @@ class WebConfig(
         registry.addInterceptor(sessionInterceptor)
             .addPathPatterns("/**")
             .excludePathPatterns(
+                "/api/guest/**",
+                "/guest/**",
                 "/users/signin/**",
-                "/api/auth/users/signin/**",
                 "/users/signup/**",
+                "/api/auth/users/signin/**",
                 "/api/auth/users/signup/**",
                 "/api/auth/users/signout/**",
 

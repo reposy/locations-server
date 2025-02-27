@@ -1,7 +1,7 @@
 import { eventBus } from './eventBus.js';
 import { store } from "./store.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     // 내비게이션 링크 이벤트 (예시)
     document.querySelectorAll("a.nav-link").forEach(link => {
@@ -16,10 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
         loadContent(url);
     });
 
-    // 초기 화면은 그룹 목록으로 설정 (서버에서 group-list.html에 data-page="group-list"를 추가)
-    eventBus.emit("navigate", "/group-list");
+    await loadCurrentUser();
 
-    loadCurrentUser();
+    eventBus.emit("navigate", "/group-list");
 });
 
 async function loadCurrentUser() {
@@ -32,7 +31,7 @@ async function loadCurrentUser() {
         }
         const user = await response.json();
         // store에 현재 사용자 ID를 저장합니다.
-        store.setState({ currentUserId: user.id });
+        store.setState({ currentUser: user });
         console.log("현재 사용자 정보:", user);
     } catch (error) {
         console.error("Error loading current user:", error);

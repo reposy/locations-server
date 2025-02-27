@@ -1,7 +1,7 @@
-// 파일 경로: /js/user/common/websocket.js
+// 파일 경로: /js/user/common/websocketService.js
 
-import { store } from '../store.js';
-import { eventBus } from '../eventBus.js';
+import { store } from '../user/store.js';
+import { eventBus } from '../user/eventBus.js';
 
 // WebSocket 연결 객체 (Stomp 클라이언트)
 let stompClient = null;

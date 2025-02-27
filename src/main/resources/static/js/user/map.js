@@ -1,7 +1,7 @@
 import { initNaverMap } from "/js/naver/map/naver-map.js";
 import { createMarker, createInfoWindow, openInfoWindow } from "/js/users/common/mapMarker.js";
 import { getAddressFromCoords } from "/js/naver/map/reverse-geocode.js";
-import { store } from "/js/users/common/store.js";
+import { store } from "/js/users/common/guest-store.js";
 
 let naverMap = null;
 let focusedMarker = null;

@@ -108,7 +108,7 @@ function renderSearchResults(users) {
 async function sendInvite(toUserId) {
     try {
         const groupId = store.getSelectedGroupId();
-        const currentUserId = store.getState().currentUserId;
+        const currentUserId = store.getState().currentUser.id;
         if (!groupId || !currentUserId) {
             alert("그룹 정보 또는 현재 사용자 정보가 없습니다.");
             return;

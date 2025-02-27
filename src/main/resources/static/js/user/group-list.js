@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     eventBus.on("contentLoaded", (data) => {
         if (data && data.pageType === "group-list") {
+            updateGroupListHeader();
             loadGroupList();
         }
     });
@@ -32,6 +33,15 @@ document.addEventListener("DOMContentLoaded", () => {
         loadGroupList();
     });
 });
+
+
+function updateGroupListHeader() {
+    const headerElem = document.querySelector("#userGroupsH1");
+    const user = store.getState().currentUser
+    if (headerElem && user && user.nickname) {
+        headerElem.textContent = `${user.nickname}님 그룹`;
+    }
+}
 
 async function loadGroupList() {
     console.log("loadGroupList 호출됨");
@@ -104,7 +114,7 @@ function renderGroupList(groups) {
         card.appendChild(mapDiv);
 
         // 현재 사용자 ID
-        const currentUserId = store.getState().currentUserId;
+        const currentUserId = store.getState().currentUser.id;
 
         // 만약 현재 사용자와 그룹 생성자가 같다면 수정/삭제 버튼 추가
         if (group.createUserId === currentUserId) {

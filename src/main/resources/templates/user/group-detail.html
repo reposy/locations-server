@@ -14,16 +14,40 @@
     <div class="mb-6">
         <div class="flex items-center justify-between">
             <h2 class="text-2xl font-semibold mb-2">참여 인원</h2>
-            <!-- 초대 버튼: 모바일에서는 작고 깔끔한 원형 + 버튼 -->
-            <button id="openGroupInviteModalBtn" class="bg-blue-500 text-white rounded-full p-1 focus:outline-none hover:bg-blue-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24">
-                    <line x1="12" y1="6" x2="12" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="6" y1="12" x2="18" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </button>
+            <!-- 버튼 그룹: 새로운 링크 버튼(보라색)과 기존 + 버튼(파란색) -->
+            <div class="flex items-center space-x-2">
+                <!-- 새로 추가된 링크 생성 버튼 -->
+                <button
+                        id="openGroupInviteLinkBtn"
+                        class="bg-purple-500 text-white rounded-full p-1 focus:outline-none hover:bg-purple-600"
+                        style="display:none;">
+                    <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round" >
+                        <!-- 체인(링크) 아이콘 예시 (Heroicons) -->
+                        <path d="M13.828 10.172a4 4 0 010 5.656m-1.414-1.414
+                             a2 2 0 000-2.828m0 0L7.05 7.05a4 4 0 010-5.656
+                             m0 0L9.88 1.88a4 4 0 015.656 5.656" />
+                    </svg>
+                </button>
+                <!-- 초대 버튼: 모바일에서는 작고 깔끔한 원형 + 버튼 -->
+                <button id="openGroupInviteModalBtn"
+                        class="bg-blue-500 text-white rounded-full p-1 focus:outline-none hover:bg-blue-600"
+                        style="display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24">
+                        <line x1="12" y1="6" x2="12" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="6" y1="12" x2="18" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
         </div>
         <div id="membersList" class="grid grid-cols-1 gap-4">
-            <!-- 멤버 목록은 JS로 동적으로 추가됩니다. -->
         </div>
     </div>
 
@@ -31,7 +55,6 @@
     <div>
         <h2 class="text-2xl font-semibold mb-2">지도</h2>
         <div id="groupMap" class="w-full h-64 bg-gray-200 rounded">
-            <!-- 지도 API 연동 예정 -->
         </div>
     </div>
 </div>

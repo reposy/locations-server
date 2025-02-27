@@ -1,4 +1,4 @@
-package springbootkotlin.locationsserver.domain.group.websocket
+package springbootkotlin.locationsserver.websocket
 
 import org.slf4j.LoggerFactory
 import org.springframework.messaging.handler.annotation.MessageMapping

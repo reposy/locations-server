@@ -2,6 +2,7 @@ import { eventBus } from './eventBus.js';
 
 export const store = {
     state: {
+        currentUser: {},
         groups: [],
         selectedGroupId: null,
         naverMap: null,    // 생성된 네이버 지도 인스턴스

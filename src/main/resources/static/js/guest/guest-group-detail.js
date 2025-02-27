@@ -1,65 +1,22 @@
-import { store } from './store.js';
-import { eventBus } from './eventBus.js';
+import { store } from './guest-store.js';
+import { eventBus } from './guest-eventBus.js';
 import { initNaverMap } from '../naver/map/naver-map.js';
 import { createMarker } from '../naver/map/mapMarker.js';
 import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic } from '../service/websocketService.js';
-import { startLocationWatch, stopLocationWatch } from './common/locationUpdater.js';
+import { startLocationWatch, stopLocationWatch } from './common/guestLocationUpdater.js';
 
-let groupMarkers = {}; // 그룹 내 다른 사용자 마커 저장
+let groupMarkers = {}; // 다른 사용자(멤버) 마커 저장
 
 eventBus.on("contentLoaded", async (data) => {
-    if (data && data.pageType === "group-detail") {
-        const groupId = store.getSelectedGroupId();
+    if (data && data.pageType === "guest-group-detail") {
+        const groupId = store.getState().groupId;
         if (!groupId) {
             console.error("선택된 그룹 ID가 store에 없습니다.");
+            window.location.href = "/users/signin";
             return;
         }
-        // 그룹 상세 정보 로드
-        const groupDetail = await loadGroupDetail(groupId);
+        await loadGroupDetail(groupId);
 
-        // 그룹 멤버 로드 후 멤버 체크 (현재 사용자가 멤버가 아니라면)
-        const members = await loadGroupMembers(groupId);
-        const currentUserId = store.getState().currentUser.id;
-        const isMember = members.some(member => member.userId === currentUserId);
-        if (!isMember) {
-            eventBus.emit("navigate", "/group-list");
-            return;
-        }
-
-        // 그룹 주인만 초대 버튼이 보이도록 처리
-        const openGroupInviteModalBtn = document.getElementById("openGroupInviteModalBtn");
-        const openGroupInviteLinkBtn = document.getElementById("openGroupInviteLinkBtn");
-        console.log(`groupDetail.createUserId = ${groupDetail.createUserId}, currentUserId ${currentUserId}`)
-        if (groupDetail && groupDetail.createUserId !== currentUserId) {
-            // 방장이 아니라면 초대 버튼을 숨김
-            if (openGroupInviteModalBtn)
-                openGroupInviteModalBtn.style.display = "none";
-            if (openGroupInviteLinkBtn)
-                openGroupInviteLinkBtn.style.display = "none";
-
-        } else {
-            // 방장인 경우엔 버튼을 보임
-            if (openGroupInviteModalBtn) {
-                openGroupInviteModalBtn.style.display = "";
-                openGroupInviteModalBtn.addEventListener("click", () => {
-                    eventBus.emit("openGroupInviteModal");
-                });
-            } else {
-                console.error("openGroupInviteModalBtn not found");
-            }
-
-            if (openGroupInviteLinkBtn) {
-                openGroupInviteLinkBtn.style.display = "";
-                openGroupInviteLinkBtn.addEventListener("click", () => {
-                    eventBus.emit("openGroupInviteLinkModal");
-                });
-            } else {
-                console.error("openGroupInviteLinkBtn not found");
-            }
-
-        }
-
-        // WebSocket 초기화 및 그룹 토픽 구독
         try {
             const stompClient = await initWebSocket();
             if (stompClient && stompClient.connected) {
@@ -69,12 +26,12 @@ eventBus.on("contentLoaded", async (data) => {
             console.error("WebSocket 초기화 실패:", err);
         }
     } else {
-        // 그룹 상세 페이지가 아니라면 WebSocket 연결 해제
+        // 그룹 상세 페이지가 아니면 WebSocket 연결 해제
         disconnectWebSocket();
     }
 });
 
-// WebSocket 메시지 처리: 위치 업데이트 수신
+// WebSocket 메시지 처리: 다른 멤버들의 위치 업데이트 처리
 function handleLocationUpdate(update) {
     console.log("WebSocket 위치 업데이트 수신:", update);
     const naverObj = store.getNaver();
@@ -84,34 +41,35 @@ function handleLocationUpdate(update) {
         return;
     }
     const newPos = new naverObj.maps.LatLng(update.latitude, update.longitude);
-    const currentUserId = store.getState().currentUser.id;
-    // 현재 사용자의 위치 업데이트는 locationUpdater.js에서 처리하므로,
-    // 여기서는 다른 사용자의 위치만 처리합니다.
-    if (update.userId === currentUserId) {
+
+    // 현재 사용자 정보가 있을 경우에만 비교 (게스트는 currentUser가 없을 수 있음)
+    const guestId = store.getState().guestId;
+    if (guestId && update.userId === guestId) {
         console.log("내 위치 업데이트는 locationUpdater에서 처리됩니다.");
         return;
-    }
-    // 타 사용자: 녹색 마커
-    const markerColor = "#00FF00";
-    if (groupMarkers[update.userId]) {
-        groupMarkers[update.userId].setPosition(newPos);
-        console.log(`사용자 ${update.userId} 마커 업데이트 (WebSocket)`);
     } else {
-        const marker = createMarker(map, {
-            latitude: update.latitude,
-            longitude: update.longitude,
-            markerType: "default",
-            markerColor: markerColor,
-            nickname: update.nickname || "멤버 위치"
-        });
-        groupMarkers[update.userId] = marker;
-        console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
+        const markerColor = "#00FF00"; // 타 사용자: 녹색
+        if (groupMarkers[update.userId]) {
+            groupMarkers[update.userId].setPosition(newPos);
+            console.log(`사용자 ${update.userId} 마커 업데이트 (WebSocket)`);
+        } else {
+            const marker = createMarker(map, {
+                latitude: update.latitude,
+                longitude: update.longitude,
+                markerType: "default",
+                markerColor: markerColor,
+                nickname: update.nickname || "멤버 위치"
+            });
+            groupMarkers[update.userId] = marker;
+            console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
+        }
     }
 }
 
+// 그룹 상세 정보를 로드하고 화면에 렌더링하는 함수
 async function loadGroupDetail(groupId) {
     try {
-        const response = await fetch(`/api/groups/${groupId}`, {
+        const response = await fetch(`/api/guest/groups/${groupId}`, {
             headers: { "Accept": "application/json" }
         });
         if (!response.ok) {
@@ -127,7 +85,7 @@ async function loadGroupDetail(groupId) {
         } else {
             console.error("groupName 요소를 찾을 수 없습니다.");
         }
-        // 페이지 타이틀 업데이트 (pageTitle 요소가 있으면 사용, 없으면 document.title)
+        // 페이지 타이틀 업데이트
         const pageTitleElem = document.getElementById("pageTitle");
         if (pageTitleElem) {
             pageTitleElem.textContent = `${data.name || "이름 없음"} - 그룹 상세`;
@@ -135,25 +93,23 @@ async function loadGroupDetail(groupId) {
             document.title = `${data.name || "이름 없음"} - 그룹 상세`;
         }
 
-        // toggleLocation 요소 이벤트 재등록
+        // 내 위치 공유 토글 이벤트 재등록
         const toggleLocationElem = document.getElementById("toggleLocation");
         if (toggleLocationElem) {
             toggleLocationElem.removeEventListener("change", toggleLocationHandler);
             toggleLocationElem.addEventListener("change", toggleLocationHandler);
-            // 기본값 false (서버에 isSharingLocation 필드가 없으므로)
             toggleLocationElem.checked = false;
         } else {
             console.warn("toggleLocation 요소를 찾을 수 없습니다.");
         }
 
-        // 그룹 상세 페이지의 새로운 지도 컨테이너 "groupMap"이 새로 생성되었으므로
-        // 기존 지도 인스턴스는 더 이상 유효하지 않으므로 새로 초기화합니다.
+        // 지도 초기화: 게스트 페이지에서는 항상 새 지도 인스턴스로 초기화
         const mapContainer = document.getElementById("groupMap");
         if (!mapContainer) {
             console.error("groupMap 컨테이너를 찾을 수 없습니다.");
             return;
         }
-        const map = await initNaverMap("groupMap"); // 항상 새 인스턴스로 초기화
+        const map = await initNaverMap("groupMap");
         if (!map) {
             console.error("네이버 지도 초기화 실패");
             return;
@@ -163,16 +119,15 @@ async function loadGroupDetail(groupId) {
         console.log("네이버 지도 초기화 완료");
 
         await loadGroupMembers(groupId);
-        return data;
     } catch (error) {
         console.error("Error loading group detail:", error);
-        return {};
     }
 }
 
+// 그룹 멤버 목록을 로드하여 렌더링하는 함수
 async function loadGroupMembers(groupId) {
     try {
-        const response = await fetch(`/api/groups/${groupId}/members`, {
+        const response = await fetch(`/api/guest/groups/${groupId}/members`, {
             headers: { "Accept": "application/json" }
         });
         if (!response.ok) {
@@ -185,35 +140,32 @@ async function loadGroupMembers(groupId) {
             console.error("membersList 요소를 찾을 수 없습니다.");
             return;
         }
-        membersList.innerHTML = '';
+        membersList.innerHTML = "";
 
-        // 대표 멤버(예: 첫 번째 멤버)와 토글 아이콘을 포함하는 컨테이너 생성
+        // 참여 인원 헤더 (대표 멤버와 전체 목록 토글)
         const headerDiv = document.createElement("div");
         headerDiv.className = "flex items-center justify-between p-2 bg-white rounded shadow";
 
-        // 대표 멤버 이름 표시 (예: 첫 번째 멤버)
         if (members.length > 0) {
             const repName = document.createElement("span");
             repName.textContent = members[0].nickname;
             repName.className = "font-semibold";
             headerDiv.appendChild(repName);
         } else {
-            // 멤버가 없는 경우
             const emptyMsg = document.createElement("span");
             emptyMsg.textContent = "참여 인원이 없습니다.";
             headerDiv.appendChild(emptyMsg);
         }
 
-        // 토글 버튼: 삼각형 아이콘
+        // 토글 버튼 (아래/위 삼각형 아이콘)
         const toggleBtn = document.createElement("button");
         toggleBtn.className = "focus:outline-none";
-        // 기본은 삼각형 아래 아이콘 (전체 목록 보임을 암시)
         toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>`;
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>`;
         headerDiv.appendChild(toggleBtn);
 
-        // 부가: 전체 목록을 담을 드롭다운 컨테이너 (초기엔 숨김)
+        // 드롭다운 목록 (초기 숨김)
         const dropdown = document.createElement("div");
         dropdown.className = "mt-2 border border-gray-200 rounded hidden";
         members.forEach(member => {
@@ -223,30 +175,24 @@ async function loadGroupMembers(groupId) {
             dropdown.appendChild(item);
         });
 
-        // 토글 버튼 클릭 시 드롭다운 표시/숨김 토글
         toggleBtn.addEventListener("click", () => {
             if (dropdown.classList.contains("hidden")) {
                 dropdown.classList.remove("hidden");
-                // 아이콘을 위쪽 삼각형으로 변경
                 toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                  </svg>`;
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                        </svg>`;
             } else {
                 dropdown.classList.add("hidden");
-                // 아이콘을 다시 아래쪽 삼각형으로 변경
                 toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>`;
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>`;
             }
         });
 
-        // 전체 멤버 렌더링: 대표 정보와 드롭다운을 membersList에 추가
         membersList.appendChild(headerDiv);
         membersList.appendChild(dropdown);
-        return members;
     } catch (error) {
         console.error("Error loading group members:", error);
-        return [];
     }
 }
 

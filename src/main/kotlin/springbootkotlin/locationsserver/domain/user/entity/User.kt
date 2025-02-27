@@ -8,7 +8,8 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "users")
-data class User(
+@Inheritance(strategy = InheritanceType.JOINED)
+class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
