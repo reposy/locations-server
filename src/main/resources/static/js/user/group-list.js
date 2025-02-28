@@ -71,13 +71,13 @@ function renderGroupList(groups) {
         const card = document.createElement("div");
         card.className = "group relative bg-white p-4 rounded shadow hover:shadow-lg cursor-pointer";
 
-        // 그룹 카드 클릭 시, 선택된 그룹 ID를 store에 저장한 후 상세 페이지로 이동 이벤트 발생
+        // 그룹 카드 클릭 시, 선택된 그룹 ID를 store에 저장한 후 상세 페이지로 이동
         card.onclick = () => {
             store.setSelectedGroupId(group.id);
             eventBus.emit("navigate", `/groups/${group.id}`);
         };
 
-        // 방장 닉네임 (그룹 생성자 닉네임) 표시
+        // 그룹 생성자 닉네임 표시 (방장)
         const createUserNickname = document.createElement("h2");
         createUserNickname.className = "text-xl font-semibold";
         createUserNickname.textContent = group.createUserNickname;
@@ -101,16 +101,10 @@ function renderGroupList(groups) {
         maxUsersP.innerHTML = `Max Users: <span>${group.maxUsers}</span>`;
         card.appendChild(maxUsersP);
 
-        // 지도 영역 (JS에서 초기화 예정)
-        const mapDiv = document.createElement("div");
-        mapDiv.className = "mt-2 h-40 bg-gray-200 rounded";
-        mapDiv.id = `map-${group.id}`;
-        card.appendChild(mapDiv);
-
         // 현재 사용자 ID
         const currentUserId = store.getState().currentUser.id;
 
-        // 만약 현재 사용자와 그룹 생성자가 같다면 수정/삭제 버튼 추가
+        // 그룹 생성자와 같다면 수정/삭제 버튼 추가
         if (group.createUserId === currentUserId) {
             // 삭제 버튼 (휴지통 아이콘)
             const deleteBtn = document.createElement("button");
@@ -156,6 +150,39 @@ function renderGroupList(groups) {
                 openUpdateModal(group);
             });
             card.appendChild(updateBtn);
+        } else {
+            // 만약 현재 사용자가 그룹 소유자가 아니라면, "나가기" 버튼(아이콘) 추가
+            const leaveBtn = document.createElement("button");
+            leaveBtn.className = "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm";
+            leaveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2H7V9h2V7h2v2h2v2h-2v2z"/>
+            </svg>`;
+            leaveBtn.title = "그룹 나가기";
+            leaveBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                if (confirm("정말 그룹에서 나가시겠습니까?")) {
+                    fetch(`/api/groups/${group.id}/members/leave`, {
+                        method: "POST",
+                        headers: { "Accept": "application/json" }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error("그룹 나가기 실패");
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert("그룹에서 나갔습니다.");
+                            eventBus.emit("groupUpdated", data);
+                            console.log("그룹 나가기 성공:", data);
+                        })
+                        .catch(error => {
+                            alert("그룹 나가기에 실패했습니다: " + error.message);
+                            console.error("나가기 API 에러:", error);
+                        });
+                }
+            });
+            card.appendChild(leaveBtn);
         }
         groupListContainer.appendChild(card);
     });

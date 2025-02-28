@@ -20,15 +20,24 @@ class UserInvitationService(
         return userInvitationRepository.findById(invitationId).orElse(null)
     }
 
+    /**
+     * 해당 그룹, 사용자에 대해 ACCEPTED 상태의 초대가 존재하면 삭제합니다.
+     */
+    fun deleteAcceptedInvitation(user: User, groupId: Long) {
+        userInvitationRepository.findByGroupIdAndToUserIdAndStatus(groupId, user.id, InvitationStatus.ACCEPTED)
+            ?.let { invitation ->
+                userInvitationRepository.delete(invitation)
+            }
+    }
 
-    fun existsInvitation(fromUser: User, toUser: User, group: Group): Boolean {
+    fun existsPendingInvitation(fromUser: User, toUser: User, group: Group): Boolean {
         return userInvitationRepository.existsByGroupAndFromUserAndToUserAndStatus(
             group, fromUser, toUser, InvitationStatus.PENDING
         )
     }
 
     fun sendInvitation(invitation: UserInvitation): UserInvitation {
-        if (existsInvitation(invitation.fromUser, invitation.toUser, invitation.group)) {
+        if (existsPendingInvitation(invitation.fromUser, invitation.toUser, invitation.group)) {
             throw IllegalStateException("이미 초대했습니다.")
         }
         return userInvitationRepository.save(invitation)

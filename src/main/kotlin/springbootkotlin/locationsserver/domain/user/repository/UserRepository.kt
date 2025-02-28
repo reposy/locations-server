@@ -14,10 +14,10 @@ interface UserRepository: JpaRepository<User, Long> {
     fun existsByEmailAddress(emailAddress: String): Boolean
     @Query("""
         SELECT u FROM User u 
-         WHERE ( u.nickname LIKE %:query% 
-            OR u.emailAddress LIKE %:query% )
+         WHERE ( u.nickname = :query
+            OR u.emailAddress = :query )
            AND u.id <> :currentUserId
-           AND NOT EXISTS ( SELECT 1 FROM GroupMember m WHERE m.group.id = :groupId AND m.user.id = u.id)
+           AND NOT EXISTS ( SELECT 1 FROM GroupMember m WHERE m.group.id = :groupId AND m.user.id = u.id )
     """)
     fun searchUsersNotInGroup(
         @Param("query") query: String,

@@ -9,7 +9,7 @@ import springbootkotlin.locationsserver.infrastructure.config.entity.AuditableEn
 @Table(
     name = "user_invitation",
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["group_id", "from_user_id", "to_user_id"])
+        UniqueConstraint(columnNames = ["group_id", "from_user_id", "to_user_id", "status"])
     ]
 )
 class UserInvitation(

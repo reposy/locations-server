@@ -8,7 +8,10 @@ import springbootkotlin.locationsserver.domain.user.entity.User
 
 interface UserInvitationRepository : JpaRepository<UserInvitation, Long> {
     fun findByToUserIdAndStatus(userId: Long, status: InvitationStatus): List<UserInvitation>
-    // 새로 추가: 그룹, fromUser, toUser, status가 일치하는 초대가 존재하는지 확인
+
+
+    fun findByGroupIdAndToUserIdAndStatus(groupId: Long, toUserId: Long, status: InvitationStatus): UserInvitation?
+
     fun existsByGroupAndFromUserAndToUserAndStatus(
         group: Group,
         fromUser: User,

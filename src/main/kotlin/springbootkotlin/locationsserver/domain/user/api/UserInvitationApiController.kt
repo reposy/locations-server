@@ -26,12 +26,17 @@ class UserInvitationApiController(
         val userInfo = sessionService.getUserInfo(session)
         if (userInfo.id != request.fromUserId)
             throw IllegalArgumentException("잘못된 요청입니다. ${request.fromUserId}, ${userInfo.id}")
+
         // groupId, fromUserId, toUserId를 통해 실제 엔티티 조회
         val group = groupService.getGroupById(request.groupId)
         val fromUser = userService.findById(request.fromUserId)
             ?: throw IllegalArgumentException("FromUser not found with id: ${request.fromUserId}")
         val toUser = userService.findById(request.toUserId)
             ?: throw IllegalArgumentException("ToUser not found with id: ${request.toUserId}")
+
+        // 이미 초대된 사용자인지 확인 (예: status가 PENDING인 초대가 존재하는지)
+        if (userInvitationService.existsPendingInvitation(fromUser, toUser, group))
+            throw IllegalArgumentException("이미 초대된 사용자입니다.")
 
         val invitation = UserInvitation(
             group = group,

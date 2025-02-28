@@ -9,4 +9,5 @@ interface GroupMemberRepository : JpaRepository<GroupMember, Long> {
     fun findByGroupId(groupId: Long): List<GroupMember>
     fun existsByGroupIdAndUserId(groupId: Long, userId: Long): Boolean
     fun findByUserId(userId: Long): List<GroupMember>
+    fun findByGroupIdAndUserId(groupId: Long, userId: Long): GroupMember?
 }

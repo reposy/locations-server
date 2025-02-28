@@ -74,19 +74,33 @@ class GroupMemberService(
         // 그룹 정보 조회
         val group = groupService.getGroupById(groupId)
         // 강퇴 요청자가 그룹 소유자인지 확인
-        if (!isOwner(requesterId, groupId)) {
+        if (!isOwner(requesterId, groupId))
             throw IllegalArgumentException("해당 그룹의 소유자만 멤버를 강퇴할 수 있습니다.")
-        }
+
         // 그룹 소유자는 강퇴될 수 없음
-        if (group.createUser.id == memberId) {
+        if (group.createUser.id == memberId)
             throw IllegalArgumentException("그룹 소유자는 강퇴될 수 없습니다.")
-        }
+
         // 삭제할 멤버가 존재하는지 확인 후 삭제
-        val member = groupMemberRepository.findById(memberId)
-            .orElseThrow { IllegalArgumentException("해당 멤버가 존재하지 않습니다: $memberId") }
+        // 그룹 내에서 userId를 기준으로 멤버 찾기
+        val member = groupMemberRepository.findByGroupIdAndUserId(groupId, memberId)
+            ?: throw IllegalArgumentException("해당 멤버가 존재하지 않습니다: $memberId")
+
         groupMemberRepository.delete(member)
 
         // 최신 멤버 목록을 조회하고 WebSocket으로 브로드캐스트
+        val updatedMembers = getMembersByGroupId(groupId)
+        websocketService.publishMemberUpdate(groupId, updatedMembers)
+    }
+
+    /**
+     * 특정 그룹에서 userId에 해당하는 멤버를 제거합니다.
+     */
+    fun removeMemberByUserId(groupId: Long, userId: Long) {
+        val member = groupMemberRepository.findByGroupIdAndUserId(groupId, userId)
+            ?: throw IllegalArgumentException("그룹 멤버를 찾을 수 없습니다.")
+        groupMemberRepository.delete(member)
+        // 최신 멤버 목록 브로드캐스트 (필요하다면)
         val updatedMembers = getMembersByGroupId(groupId)
         websocketService.publishMemberUpdate(groupId, updatedMembers)
     }

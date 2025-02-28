@@ -8,12 +8,14 @@ import springbootkotlin.locationsserver.domain.auth.user.session.UserSessionServ
 import springbootkotlin.locationsserver.domain.group.entity.GroupMember
 import springbootkotlin.locationsserver.domain.group.service.GroupMemberService
 import springbootkotlin.locationsserver.domain.group.service.GroupService
+import springbootkotlin.locationsserver.domain.user.service.UserInvitationService
 import springbootkotlin.locationsserver.domain.user.service.UserService
 
 @RestController
 @RequestMapping("/api/groups/{groupId}/members")
 class GroupMemberApiController(
     private val groupMemberService: GroupMemberService,
+    private val userInvitationService: UserInvitationService,
     private val userService: UserService,
     private val groupService: GroupService,
     private val sessionService: UserSessionService
@@ -54,6 +56,34 @@ class GroupMemberApiController(
         val updatedMembers = groupMemberService.getMembersByGroupId(groupId)
             .map { GroupMemberResponse.fromEntity(it) }
         return ResponseEntity.ok(updatedMembers)
+    }
+
+    @PostMapping("/leave")
+    fun leaveGroup(
+        @PathVariable groupId: Long,
+        session: HttpSession
+    ): ResponseEntity<Any> {
+        // 현재 로그인한 사용자 정보 획득 (세션 또는 토큰 기반)
+        val sessionUser = sessionService.getUserInfo(session)
+
+        val user = userService.findById(sessionUser.id)
+            ?: return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(mapOf("message" to "사용자 정보를 찾을 수 없습니다."))
+
+        // 현재 사용자가 해당 그룹의 멤버인지 확인
+        if (!groupMemberService.isMember(sessionUser.id, groupId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(mapOf("message" to "해당 그룹의 멤버가 아닙니다."))
+        }
+
+        // 만약 ACCEPTED 상태의 userInvitation이 존재하면 삭제 처리
+        // (userInvitationService.deleteAcceptedInvitation는 해당 그룹, 사용자에 대해 ACCEPTED 초대를 삭제하는 메서드로 가정)
+        userInvitationService.deleteAcceptedInvitation(user, groupId)
+
+        // 그룹 멤버 제거 (user.id에 해당하는 멤버 삭제)
+        groupMemberService.removeMemberByUserId(groupId, sessionUser.id)
+
+        return ResponseEntity.ok(mapOf("message" to "그룹에서 나가셨습니다."))
     }
 }
 

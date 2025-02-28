@@ -128,8 +128,9 @@ async function sendInvite(toUserId) {
         });
         if (!response.ok) {
             // 응답 본문을 읽어서 에러 메시지를 throw 합니다.
-            const errorText = await response.message;
-            throw new Error(errorText);
+            const errorData = await response.json();
+            const errorMessage = errorData.error
+            throw new Error(errorMessage || "Unknown error");
         }
         const result = await response.json();
         alert("초대가 전송되었습니다.");

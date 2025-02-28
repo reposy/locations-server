@@ -174,13 +174,20 @@ async function loadGroupDetail(groupId) {
 async function loadGroupMembers(groupId) {
     try {
         const response = await fetch(`/api/groups/${groupId}/members`, {
-            headers: { "Accept": "application/json" }
+            headers: {"Accept": "application/json"}
         });
         if (!response.ok) {
             throw new Error("그룹 멤버 정보를 불러오지 못했습니다.");
         }
         const members = await response.json();
         console.log("그룹 멤버 API 응답:", members);
+
+        const currentUserId = store.getState().currentUser.id
+        if (!members.some(member => member.userId === currentUserId)) {
+            alert("해당 그룹에 대한 접근 권한이 없습니다.")
+            window.location.href = "/"
+        }
+
         updateMemberList(members);
         return members;
     } catch (error) {
@@ -191,6 +198,12 @@ async function loadGroupMembers(groupId) {
 
 // 참여 인원 목록 업데이트 함수
 function updateMemberList(members) {
+
+    const currentUserId = store.getState().currentUser.id
+    if (!members.some(member => member.userId === currentUserId)) {
+        alert("해당 그룹에 대한 접근 권한이 없습니다.")
+        window.location.href = "/"
+    }
     // "membersList" 요소를 사용 (HTML에 <div id="membersList"> 존재)
     const container = document.getElementById("membersList");
     if (!container) {
@@ -203,7 +216,6 @@ function updateMemberList(members) {
     // 그룹 소유자(OWNER)와 일반 멤버(MEMBER)를 구분
     const ownerMember = members.find(member => member.role === "OWNER");
     const nonOwnerMembers = members.filter(member => member.role !== "OWNER");
-    const currentUser = store.getState().currentUser
 
     // 전체 참여 인원 수 (소유자 포함)
     const totalCount = members.length;
@@ -224,7 +236,7 @@ function updateMemberList(members) {
     // 왼쪽: 그룹 소유자(방장) 정보 (항상 표시)
     const ownerSpan = document.createElement("span");
     ownerSpan.className = "font-bold text-base";
-    if (ownerMember.userId === currentUser.id)
+    if (ownerMember.userId === currentUserId)
         ownerSpan.textContent = ownerMember ? `${ownerMember.nickname} (방장/나)` : "방장 정보 없음";
     else
         ownerSpan.textContent = ownerMember ? `${ownerMember.nickname} (방장)` : "방장 정보 없음";
@@ -254,7 +266,7 @@ function updateMemberList(members) {
         item.className = "flex items-center justify-between p-3 border-b";
         // 멤버 닉네임 표시
         const nameSpan = document.createElement("span");
-        if(member.userId === currentUser.id)
+        if(member.userId === currentUserId)
             nameSpan.textContent = `${member.nickname}(나)`;
         else
             nameSpan.textContent = member.nickname;
@@ -263,7 +275,7 @@ function updateMemberList(members) {
 
         // 강퇴 버튼: 현재 사용자가 그룹 소유자일 때만 표시
         // 강퇴 버튼은 오직 그룹 소유자(OWNER)가 있는 경우에만 보입니다.
-        if (ownerMember.userId === currentUser.id) {
+        if (ownerMember.userId === currentUserId) {
             const kickBtn = document.createElement("button");
             kickBtn.className = "text-red-500 hover:text-red-700";
             kickBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
@@ -273,7 +285,7 @@ function updateMemberList(members) {
                                   </svg>`;
             kickBtn.addEventListener("click", () => {
                 if (confirm(`${member.nickname}님을 강제퇴장 시키겠습니까?`)) {
-                    kickMember(member.id);
+                    kickMember(member.userId);
                 }
             });
             item.appendChild(kickBtn);

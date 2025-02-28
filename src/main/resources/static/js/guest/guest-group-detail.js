@@ -143,6 +143,12 @@ async function loadGroupMembers(groupId) {
         }
         let members = await response.json();
         console.log("그룹 멤버 API 응답:", members);
+
+        const guestId = store.getState().guestId
+        if (!members.some(member => member.userId === guestId)) {
+            alert("해당 그룹에 대한 접근 권한이 없습니다.")
+            window.location.href = "/"
+        }
         updateMemberList(members);
         return members;
     } catch (error) {
@@ -156,6 +162,12 @@ async function loadGroupMembers(groupId) {
 // 그 아래 한 행에는 방장 정보와 토글 버튼이 배치되며,
 // 토글 버튼 클릭 시 방장을 제외한 일반 멤버 목록(강퇴 버튼 없이)이 드롭다운으로 표시됨.
 function updateMemberList(members) {
+
+    const guestId = store.getState().guestId
+    if (!members.some(member => member.userId === guestId)) {
+        alert("해당 그룹에 대한 접근 권한이 없습니다.")
+        window.location.href = "/"
+    }
     // "membersList" 요소를 사용 (HTML에 <div id="membersList"> 존재)
     const container = document.getElementById("membersList");
     if (!container) {
@@ -173,7 +185,7 @@ function updateMemberList(members) {
     if (!ownerMember) {
         console.warn("방장 정보가 없습니다.");
     }
-    const guestId = store.getState().guestId
+
     const nonOwnerMembers = members.filter(member => member.userId !== ownerMember.userId)
 
     // 1. 상단 헤더 업데이트: id="groupMemberHeader"가 있다면 업데이트
