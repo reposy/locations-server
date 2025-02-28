@@ -1,14 +1,10 @@
-// 파일 경로: /js/user/common/websocketService.js
-
 import { store } from '../user/store.js';
 import { eventBus } from '../user/eventBus.js';
 
-// WebSocket 연결 객체 (Stomp 클라이언트)
 let stompClient = null;
 
 /**
- * WebSocket 초기화 함수
- * 이미 연결되어 있다면 기존 연결을 재사용합니다.
+ * WebSocket 초기화: 이미 연결되어 있으면 기존 연결 재사용
  */
 export async function initWebSocket() {
     if (stompClient && stompClient.connected) {
@@ -18,8 +14,7 @@ export async function initWebSocket() {
     return new Promise((resolve, reject) => {
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
-        // 디버그 로그 끄기 (원하면)
-        stompClient.debug = () => {};
+        stompClient.debug = () => {}; // 디버그 로그 비활성화
         stompClient.connect({}, (frame) => {
             console.log("WebSocket 연결 성공:", frame);
             store.setStompClient(stompClient);
@@ -33,7 +28,7 @@ export async function initWebSocket() {
 }
 
 /**
- * WebSocket 연결 해제 함수
+ * WebSocket 연결 해제
  */
 export function disconnectWebSocket() {
     if (stompClient && stompClient.connected) {
@@ -47,9 +42,9 @@ export function disconnectWebSocket() {
 }
 
 /**
- * 특정 그룹 토픽 구독 함수
- * @param {number} groupId - 구독할 그룹 ID
- * @param {Function} callback - 메시지 수신 시 실행할 콜백 함수
+ * 그룹 위치 업데이트 토픽 구독
+ * @param {number} groupId - 그룹 ID
+ * @param {Function} callback - 메시지 수신 콜백
  */
 export function subscribeToGroupTopic(groupId, callback) {
     if (!stompClient || !stompClient.connected) {
@@ -65,7 +60,25 @@ export function subscribeToGroupTopic(groupId, callback) {
 }
 
 /**
- * 위치 업데이트 메시지를 서버로 전송하는 함수
+ * 그룹 멤버 업데이트 토픽 구독
+ * @param {number} groupId - 그룹 ID
+ * @param {Function} callback - 메시지 수신 콜백
+ */
+export function subscribeToMemberUpdates(groupId, callback) {
+    if (!stompClient || !stompClient.connected) {
+        console.error("WebSocket이 연결되어 있지 않습니다.");
+        return;
+    }
+    const destination = `/topic/group.members.${groupId}`;
+    const subscription = stompClient.subscribe(destination, (message) => {
+        const payload = JSON.parse(message.body);
+        callback(payload);
+    });
+    return subscription;
+}
+
+/**
+ * 위치 업데이트 메시지 서버 전송
  * @param {Object} locationUpdate - { userId, latitude, longitude, ... }
  */
 export function sendLocationUpdate(locationUpdate) {

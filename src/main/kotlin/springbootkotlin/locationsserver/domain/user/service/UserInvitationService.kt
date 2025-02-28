@@ -50,7 +50,7 @@ class UserInvitationService(
 
         // 아직 그룹 미가입인 경우 -> 정상 수락 처리
         invitation.status = InvitationStatus.ACCEPTED
-        groupMemberService.addMember(invitation.group, invitation.toUser, isSharingLocation = false)
+        groupMemberService.addMember(invitation.group, invitation.toUser)
         return userInvitationRepository.save(invitation)
     }
 

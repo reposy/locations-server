@@ -101,12 +101,6 @@ function renderGroupList(groups) {
         maxUsersP.innerHTML = `Max Users: <span>${group.maxUsers}</span>`;
         card.appendChild(maxUsersP);
 
-        // 위치 공유 상태 표시
-        const sharingP = document.createElement("p");
-        sharingP.className = "text-gray-600";
-        sharingP.innerHTML = `Location Sharing: <span>${group.isLocationSharing ? 'ON' : 'OFF'}</span>`;
-        card.appendChild(sharingP);
-
         // 지도 영역 (JS에서 초기화 예정)
         const mapDiv = document.createElement("div");
         mapDiv.className = "mt-2 h-40 bg-gray-200 rounded";

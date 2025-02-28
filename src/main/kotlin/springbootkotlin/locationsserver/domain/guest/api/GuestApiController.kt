@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import springbootkotlin.locationsserver.domain.group.entity.GroupInvitationToken
+import springbootkotlin.locationsserver.domain.group.entity.GroupMember
 import springbootkotlin.locationsserver.domain.group.service.GroupInvitationTokenService
 import springbootkotlin.locationsserver.domain.group.service.GroupMemberService
 import springbootkotlin.locationsserver.domain.group.service.GroupService
@@ -68,7 +69,7 @@ class GuestApiController(
         // 그룹 정보 조회 (groupService.getGroupById는 null이 아닌 그룹을 반환한다고 가정)
         val group = groupService.getGroupById(tokenEntity.groupId)
         // 그룹 멤버 등록 (isSharingLocation은 기본값 false로 설정)
-        groupMemberService.addMember(group, guest, isSharingLocation = false)
+        groupMemberService.addMember(group, guest)
 
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         return ResponseEntity.ok(
@@ -128,13 +129,21 @@ data class GroupInfoResponse(
 
 data class GroupMemberResponse(
     val id: Long,
-    val nickname: String
+    val groupId: Long,
+    val userId: Long,
+    val nickname: String,
+    val role: String,  // "OWNER" 또는 "MEMBER" 등
+    val joinedAt: String
 ) {
     companion object {
-        fun fromEntity(member: springbootkotlin.locationsserver.domain.group.entity.GroupMember): GroupMemberResponse {
+        fun fromEntity(member: GroupMember): GroupMemberResponse {
             return GroupMemberResponse(
                 id = member.id,
-                nickname = member.user.nickname
+                groupId = member.group.id,
+                userId = member.user.id,
+                nickname = member.user.nickname,
+                role = member.role.name, // Enum 값의 이름 (예: "OWNER", "MEMBER")
+                joinedAt = member.joinedAt.toString()
             )
         }
     }

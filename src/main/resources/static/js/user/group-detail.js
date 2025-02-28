@@ -2,10 +2,10 @@ import { store } from './store.js';
 import { eventBus } from './eventBus.js';
 import { initNaverMap } from '../naver/map/naver-map.js';
 import { createMarker } from '../naver/map/mapMarker.js';
-import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic } from '../service/websocketService.js';
+import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic, subscribeToMemberUpdates } from '../service/websocketService.js';
 import { startLocationWatch, stopLocationWatch } from './common/locationUpdater.js';
 
-let groupMarkers = {}; // 그룹 내 다른 사용자 마커 저장
+let groupMarkers = {}; // 그룹 내 다른 사용자(멤버) 마커 저장
 
 eventBus.on("contentLoaded", async (data) => {
     if (data && data.pageType === "group-detail") {
@@ -17,28 +17,27 @@ eventBus.on("contentLoaded", async (data) => {
         // 그룹 상세 정보 로드
         const groupDetail = await loadGroupDetail(groupId);
 
-        // 그룹 멤버 로드 후 멤버 체크 (현재 사용자가 멤버가 아니라면)
+        // 그룹 멤버 로드 후 현재 사용자가 멤버인지 체크
         const members = await loadGroupMembers(groupId);
         const currentUserId = store.getState().currentUser.id;
         const isMember = members.some(member => member.userId === currentUserId);
         if (!isMember) {
+            alert("해당 그룹의 멤버가 아닙니다.");
             eventBus.emit("navigate", "/group-list");
             return;
         }
 
-        // 그룹 주인만 초대 버튼이 보이도록 처리
+        // 그룹 소유자(방장) ID는 groupDetail.createUserId라고 가정
+        const groupOwnerId = groupDetail.createUserId;
+
+        // 그룹 주인만 초대 버튼 보이기
         const openGroupInviteModalBtn = document.getElementById("openGroupInviteModalBtn");
         const openGroupInviteLinkBtn = document.getElementById("openGroupInviteLinkBtn");
-        console.log(`groupDetail.createUserId = ${groupDetail.createUserId}, currentUserId ${currentUserId}`)
-        if (groupDetail && groupDetail.createUserId !== currentUserId) {
-            // 방장이 아니라면 초대 버튼을 숨김
-            if (openGroupInviteModalBtn)
-                openGroupInviteModalBtn.style.display = "none";
-            if (openGroupInviteLinkBtn)
-                openGroupInviteLinkBtn.style.display = "none";
-
+        console.log(`groupDetail.createUserId = ${groupOwnerId}, currentUserId = ${currentUserId}`);
+        if (groupOwnerId !== currentUserId) {
+            if (openGroupInviteModalBtn) openGroupInviteModalBtn.style.display = "none";
+            if (openGroupInviteLinkBtn) openGroupInviteLinkBtn.style.display = "none";
         } else {
-            // 방장인 경우엔 버튼을 보임
             if (openGroupInviteModalBtn) {
                 openGroupInviteModalBtn.style.display = "";
                 openGroupInviteModalBtn.addEventListener("click", () => {
@@ -47,7 +46,6 @@ eventBus.on("contentLoaded", async (data) => {
             } else {
                 console.error("openGroupInviteModalBtn not found");
             }
-
             if (openGroupInviteLinkBtn) {
                 openGroupInviteLinkBtn.style.display = "";
                 openGroupInviteLinkBtn.addEventListener("click", () => {
@@ -56,27 +54,26 @@ eventBus.on("contentLoaded", async (data) => {
             } else {
                 console.error("openGroupInviteLinkBtn not found");
             }
-
         }
 
-        // WebSocket 초기화 및 그룹 토픽 구독
+        // WebSocket 초기화 및 구독
         try {
             const stompClient = await initWebSocket();
             if (stompClient && stompClient.connected) {
                 subscribeToGroupTopic(groupId, handleLocationUpdate);
+                subscribeToMemberUpdates(groupId, handleMemberUpdate);
             }
         } catch (err) {
             console.error("WebSocket 초기화 실패:", err);
         }
     } else {
-        // 그룹 상세 페이지가 아니라면 WebSocket 연결 해제
         disconnectWebSocket();
     }
 });
 
 // WebSocket 메시지 처리: 위치 업데이트 수신
 function handleLocationUpdate(update) {
-    console.log("WebSocket 위치 업데이트 수신:", update);
+    console.log("Location update received:", update);
     const naverObj = store.getNaver();
     const map = store.getNaverMap();
     if (!naverObj || !map) {
@@ -85,8 +82,6 @@ function handleLocationUpdate(update) {
     }
     const newPos = new naverObj.maps.LatLng(update.latitude, update.longitude);
     const currentUserId = store.getState().currentUser.id;
-    // 현재 사용자의 위치 업데이트는 locationUpdater.js에서 처리하므로,
-    // 여기서는 다른 사용자의 위치만 처리합니다.
     if (update.userId === currentUserId) {
         console.log("내 위치 업데이트는 locationUpdater에서 처리됩니다.");
         return;
@@ -95,7 +90,7 @@ function handleLocationUpdate(update) {
     const markerColor = "#00FF00";
     if (groupMarkers[update.userId]) {
         groupMarkers[update.userId].setPosition(newPos);
-        console.log(`사용자 ${update.userId} 마커 업데이트 (WebSocket)`);
+        console.log(`사용자 ${update.userId} 마커 업데이트`);
     } else {
         const marker = createMarker(map, {
             latitude: update.latitude,
@@ -105,10 +100,17 @@ function handleLocationUpdate(update) {
             nickname: update.nickname || "멤버 위치"
         });
         groupMarkers[update.userId] = marker;
-        console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
+        console.log(`사용자 ${update.userId} 마커 생성`);
     }
 }
 
+// WebSocket 메시지 처리: 최신 그룹 멤버 목록 업데이트 수신
+function handleMemberUpdate(members) {
+    console.log("Member update received:", members);
+    updateMemberList(members);
+}
+
+// 그룹 상세 정보를 로드하고 화면에 렌더링하는 함수
 async function loadGroupDetail(groupId) {
     try {
         const response = await fetch(`/api/groups/${groupId}`, {
@@ -127,7 +129,7 @@ async function loadGroupDetail(groupId) {
         } else {
             console.error("groupName 요소를 찾을 수 없습니다.");
         }
-        // 페이지 타이틀 업데이트 (pageTitle 요소가 있으면 사용, 없으면 document.title)
+        // 페이지 타이틀 업데이트
         const pageTitleElem = document.getElementById("pageTitle");
         if (pageTitleElem) {
             pageTitleElem.textContent = `${data.name || "이름 없음"} - 그룹 상세`;
@@ -140,20 +142,18 @@ async function loadGroupDetail(groupId) {
         if (toggleLocationElem) {
             toggleLocationElem.removeEventListener("change", toggleLocationHandler);
             toggleLocationElem.addEventListener("change", toggleLocationHandler);
-            // 기본값 false (서버에 isSharingLocation 필드가 없으므로)
             toggleLocationElem.checked = false;
         } else {
             console.warn("toggleLocation 요소를 찾을 수 없습니다.");
         }
 
-        // 그룹 상세 페이지의 새로운 지도 컨테이너 "groupMap"이 새로 생성되었으므로
-        // 기존 지도 인스턴스는 더 이상 유효하지 않으므로 새로 초기화합니다.
+        // 지도 초기화: 항상 새 지도 인스턴스로 초기화
         const mapContainer = document.getElementById("groupMap");
         if (!mapContainer) {
             console.error("groupMap 컨테이너를 찾을 수 없습니다.");
             return;
         }
-        const map = await initNaverMap("groupMap"); // 항상 새 인스턴스로 초기화
+        const map = await initNaverMap("groupMap");
         if (!map) {
             console.error("네이버 지도 초기화 실패");
             return;
@@ -170,6 +170,7 @@ async function loadGroupDetail(groupId) {
     }
 }
 
+// 그룹 멤버 목록을 로드하여 렌더링하는 함수 (그룹 소유자 제외 및 강퇴 버튼 추가)
 async function loadGroupMembers(groupId) {
     try {
         const response = await fetch(`/api/groups/${groupId}/members`, {
@@ -180,73 +181,146 @@ async function loadGroupMembers(groupId) {
         }
         const members = await response.json();
         console.log("그룹 멤버 API 응답:", members);
-        const membersList = document.getElementById("membersList");
-        if (!membersList) {
-            console.error("membersList 요소를 찾을 수 없습니다.");
-            return;
-        }
-        membersList.innerHTML = '';
-
-        // 대표 멤버(예: 첫 번째 멤버)와 토글 아이콘을 포함하는 컨테이너 생성
-        const headerDiv = document.createElement("div");
-        headerDiv.className = "flex items-center justify-between p-2 bg-white rounded shadow";
-
-        // 대표 멤버 이름 표시 (예: 첫 번째 멤버)
-        if (members.length > 0) {
-            const repName = document.createElement("span");
-            repName.textContent = members[0].nickname;
-            repName.className = "font-semibold";
-            headerDiv.appendChild(repName);
-        } else {
-            // 멤버가 없는 경우
-            const emptyMsg = document.createElement("span");
-            emptyMsg.textContent = "참여 인원이 없습니다.";
-            headerDiv.appendChild(emptyMsg);
-        }
-
-        // 토글 버튼: 삼각형 아이콘
-        const toggleBtn = document.createElement("button");
-        toggleBtn.className = "focus:outline-none";
-        // 기본은 삼각형 아래 아이콘 (전체 목록 보임을 암시)
-        toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>`;
-        headerDiv.appendChild(toggleBtn);
-
-        // 부가: 전체 목록을 담을 드롭다운 컨테이너 (초기엔 숨김)
-        const dropdown = document.createElement("div");
-        dropdown.className = "mt-2 border border-gray-200 rounded hidden";
-        members.forEach(member => {
-            const item = document.createElement("div");
-            item.className = "p-2 hover:bg-gray-100";
-            item.textContent = member.nickname;
-            dropdown.appendChild(item);
-        });
-
-        // 토글 버튼 클릭 시 드롭다운 표시/숨김 토글
-        toggleBtn.addEventListener("click", () => {
-            if (dropdown.classList.contains("hidden")) {
-                dropdown.classList.remove("hidden");
-                // 아이콘을 위쪽 삼각형으로 변경
-                toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                  </svg>`;
-            } else {
-                dropdown.classList.add("hidden");
-                // 아이콘을 다시 아래쪽 삼각형으로 변경
-                toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>`;
-            }
-        });
-
-        // 전체 멤버 렌더링: 대표 정보와 드롭다운을 membersList에 추가
-        membersList.appendChild(headerDiv);
-        membersList.appendChild(dropdown);
+        updateMemberList(members);
         return members;
     } catch (error) {
         console.error("Error loading group members:", error);
         return [];
+    }
+}
+
+// 참여 인원 목록 업데이트 함수
+function updateMemberList(members) {
+    // "membersList" 요소를 사용 (HTML에 <div id="membersList"> 존재)
+    const container = document.getElementById("membersList");
+    if (!container) {
+        console.error("membersList 요소를 찾을 수 없습니다.");
+        return;
+    }
+    container.innerHTML = ""; // 초기화
+
+    // API 응답 DTO에 role 정보가 있으므로,
+    // 그룹 소유자(OWNER)와 일반 멤버(MEMBER)를 구분
+    const ownerMember = members.find(member => member.role === "OWNER");
+    const nonOwnerMembers = members.filter(member => member.role !== "OWNER");
+    const currentUser = store.getState().currentUser
+
+    // 전체 참여 인원 수 (소유자 포함)
+    const totalCount = members.length;
+
+    // 1. 상단 헤더 업데이트: id="groupMemberHeader"가 있다면 업데이트
+    const headerElem = document.getElementById("groupMemberHeader");
+    if (headerElem) {
+        headerElem.textContent = `참여 인원 (${totalCount}명)`;
+    } else {
+        console.warn("groupMemberHeader 요소를 찾을 수 없습니다.");
+    }
+
+    // 2. memberListContainer 구성은 "membersList" 내부에 추가합니다.
+    //    첫 번째 행에는 그룹 소유자(방장) 정보와 오른쪽에 토글 버튼을 한 행에 배치
+    const headerRow = document.createElement("div");
+    headerRow.className = "flex items-center justify-between p-3 border-b";
+
+    // 왼쪽: 그룹 소유자(방장) 정보 (항상 표시)
+    const ownerSpan = document.createElement("span");
+    ownerSpan.className = "font-bold text-base";
+    if (ownerMember.userId === currentUser.id)
+        ownerSpan.textContent = ownerMember ? `${ownerMember.nickname} (방장/나)` : "방장 정보 없음";
+    else
+        ownerSpan.textContent = ownerMember ? `${ownerMember.nickname} (방장)` : "방장 정보 없음";
+
+    headerRow.appendChild(ownerSpan);
+
+    // 오른쪽: 토글 버튼 (초기 ▼)
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "toggleMemberBtn";
+    toggleBtn.className = "focus:outline-none";
+    toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                                  viewBox="0 0 24 24" stroke="currentColor">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                     d="M19 9l-7 7-7-7" />
+                           </svg>`;
+    headerRow.appendChild(toggleBtn);
+
+    container.appendChild(headerRow);
+
+    // 3. 드롭다운 목록: 소유자를 제외한 일반 멤버 목록 (기본적으로 숨김)
+    const dropdown = document.createElement("div");
+    dropdown.id = "memberDropdown";
+    dropdown.className = "mt-2 border border-gray-200 rounded hidden";
+
+    nonOwnerMembers.forEach(member => {
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between p-3 border-b";
+        // 멤버 닉네임 표시
+        const nameSpan = document.createElement("span");
+        if(member.userId === currentUser.id)
+            nameSpan.textContent = `${member.nickname}(나)`;
+        else
+            nameSpan.textContent = member.nickname;
+        nameSpan.className = "text-base";
+        item.appendChild(nameSpan);
+
+        // 강퇴 버튼: 현재 사용자가 그룹 소유자일 때만 표시
+        // 강퇴 버튼은 오직 그룹 소유자(OWNER)가 있는 경우에만 보입니다.
+        if (ownerMember.userId === currentUser.id) {
+            const kickBtn = document.createElement("button");
+            kickBtn.className = "text-red-500 hover:text-red-700";
+            kickBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M6 18L18 6M6 6l12 12"/>
+                                  </svg>`;
+            kickBtn.addEventListener("click", () => {
+                if (confirm(`${member.nickname}님을 강제퇴장 시키겠습니까?`)) {
+                    kickMember(member.id);
+                }
+            });
+            item.appendChild(kickBtn);
+        }
+        dropdown.appendChild(item);
+    });
+    container.appendChild(dropdown);
+
+    // 4. 토글 버튼 클릭 이벤트: 드롭다운 목록 표시/숨김 전환
+    toggleBtn.addEventListener("click", () => {
+        if (dropdown.classList.contains("hidden")) {
+            dropdown.classList.remove("hidden");
+            // 위쪽 삼각형 아이콘
+            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M5 15l7-7 7 7" />
+                                   </svg>`;
+        } else {
+            dropdown.classList.add("hidden");
+            // 아래쪽 삼각형 아이콘
+            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M19 9l-7 7-7-7" />
+                                   </svg>`;
+        }
+    });
+}
+
+// 강퇴 API 호출 함수
+async function kickMember(memberId) {
+    const groupId = store.getSelectedGroupId();
+    try {
+        const response = await fetch(`/api/groups/${groupId}/members/${memberId}`, {
+            method: "DELETE",
+            headers: { "Accept": "application/json" }
+        });
+        if (!response.ok) {
+            throw new Error("강퇴 요청 실패");
+        }
+        alert("강퇴되었습니다.");
+        // 강퇴 후 멤버 목록 재로딩
+        await loadGroupMembers(groupId);
+    } catch (error) {
+        console.error("강퇴 API 호출 오류:", error);
+        alert("강퇴 처리 중 오류가 발생했습니다.");
     }
 }
 

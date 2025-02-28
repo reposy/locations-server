@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import springbootkotlin.locationsserver.domain.group.entity.Group
 import springbootkotlin.locationsserver.domain.group.repository.GroupRepository
-import springbootkotlin.locationsserver.domain.group.service.GroupMemberService
 
 @Service
 @Transactional
@@ -50,7 +49,7 @@ class GroupService(
      * 소유자(owner) 외에 다른 멤버가 있으면 삭제를 거부합니다.
      * 소유자만 남은 경우, 해당 그룹 멤버(소유자)를 먼저 삭제한 후 그룹을 삭제합니다.
      */
-    fun deleteGroup(groupId: Long): Group {
+    fun deleteGroup(requesterId: Long, groupId: Long): Group {
         val group = groupRepository.findById(groupId)
             .orElseThrow { IllegalArgumentException("Group not found") }
         val members = groupMemberService.getMembersByGroupId(groupId)
@@ -59,7 +58,7 @@ class GroupService(
         }
         // 소유자만 남은 경우, 먼저 그룹 멤버 레코드를 제거합니다.
         if (members.size == 1) {
-            groupMemberService.removeMember(members.first().id!!)
+            groupMemberService.removeMember(requesterId, group.id, members.first().id)
         }
         groupRepository.delete(group)
         return group

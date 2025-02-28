@@ -2,10 +2,10 @@ import { store } from './guest-store.js';
 import { eventBus } from './guest-eventBus.js';
 import { initNaverMap } from '../naver/map/naver-map.js';
 import { createMarker } from '../naver/map/mapMarker.js';
-import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic } from '../service/websocketService.js';
+import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic, subscribeToMemberUpdates } from '../service/websocketService.js';
 import { startLocationWatch, stopLocationWatch } from './common/guestLocationUpdater.js';
 
-let groupMarkers = {}; // 다른 사용자(멤버) 마커 저장
+let groupMarkers = {}; // 그룹 내 다른 사용자(멤버) 마커 저장
 
 eventBus.on("contentLoaded", async (data) => {
     if (data && data.pageType === "guest-group-detail") {
@@ -21,17 +21,19 @@ eventBus.on("contentLoaded", async (data) => {
             const stompClient = await initWebSocket();
             if (stompClient && stompClient.connected) {
                 subscribeToGroupTopic(groupId, handleLocationUpdate);
+                // 멤버 업데이트 토픽 구독 추가:
+                subscribeToMemberUpdates(groupId, handleMemberUpdate);
             }
         } catch (err) {
             console.error("WebSocket 초기화 실패:", err);
         }
     } else {
-        // 그룹 상세 페이지가 아니면 WebSocket 연결 해제
+        // 그룹 상세 페이지가 아니라면 WebSocket 연결 해제
         disconnectWebSocket();
     }
 });
 
-// WebSocket 메시지 처리: 다른 멤버들의 위치 업데이트 처리
+// WebSocket 메시지 처리: 위치 업데이트 수신
 function handleLocationUpdate(update) {
     console.log("WebSocket 위치 업데이트 수신:", update);
     const naverObj = store.getNaver();
@@ -41,11 +43,9 @@ function handleLocationUpdate(update) {
         return;
     }
     const newPos = new naverObj.maps.LatLng(update.latitude, update.longitude);
-
-    // 현재 사용자 정보가 있을 경우에만 비교 (게스트는 currentUser가 없을 수 있음)
     const guestId = store.getState().guestId;
     if (guestId && update.userId === guestId) {
-        console.log("내 위치 업데이트는 locationUpdater에서 처리됩니다.");
+        console.log("내 위치 업데이트는 guestLocationUpdater에서 처리됩니다.");
         return;
     } else {
         const markerColor = "#00FF00"; // 타 사용자: 녹색
@@ -64,6 +64,12 @@ function handleLocationUpdate(update) {
             console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
         }
     }
+}
+
+// WebSocket 메시지 처리: 최신 그룹 멤버 목록 업데이트 수신
+function handleMemberUpdate(members) {
+    console.log("Member update received:", members);
+    updateMemberList(members);
 }
 
 // 그룹 상세 정보를 로드하고 화면에 렌더링하는 함수
@@ -119,8 +125,10 @@ async function loadGroupDetail(groupId) {
         console.log("네이버 지도 초기화 완료");
 
         await loadGroupMembers(groupId);
+        return data;
     } catch (error) {
         console.error("Error loading group detail:", error);
+        return {};
     }
 }
 
@@ -133,67 +141,113 @@ async function loadGroupMembers(groupId) {
         if (!response.ok) {
             throw new Error("그룹 멤버 정보를 불러오지 못했습니다.");
         }
-        const members = await response.json();
+        let members = await response.json();
         console.log("그룹 멤버 API 응답:", members);
-        const membersList = document.getElementById("membersList");
-        if (!membersList) {
-            console.error("membersList 요소를 찾을 수 없습니다.");
-            return;
-        }
-        membersList.innerHTML = "";
-
-        // 참여 인원 헤더 (대표 멤버와 전체 목록 토글)
-        const headerDiv = document.createElement("div");
-        headerDiv.className = "flex items-center justify-between p-2 bg-white rounded shadow";
-
-        if (members.length > 0) {
-            const repName = document.createElement("span");
-            repName.textContent = members[0].nickname;
-            repName.className = "font-semibold";
-            headerDiv.appendChild(repName);
-        } else {
-            const emptyMsg = document.createElement("span");
-            emptyMsg.textContent = "참여 인원이 없습니다.";
-            headerDiv.appendChild(emptyMsg);
-        }
-
-        // 토글 버튼 (아래/위 삼각형 아이콘)
-        const toggleBtn = document.createElement("button");
-        toggleBtn.className = "focus:outline-none";
-        toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>`;
-        headerDiv.appendChild(toggleBtn);
-
-        // 드롭다운 목록 (초기 숨김)
-        const dropdown = document.createElement("div");
-        dropdown.className = "mt-2 border border-gray-200 rounded hidden";
-        members.forEach(member => {
-            const item = document.createElement("div");
-            item.className = "p-2 hover:bg-gray-100";
-            item.textContent = member.nickname;
-            dropdown.appendChild(item);
-        });
-
-        toggleBtn.addEventListener("click", () => {
-            if (dropdown.classList.contains("hidden")) {
-                dropdown.classList.remove("hidden");
-                toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                                        </svg>`;
-            } else {
-                dropdown.classList.add("hidden");
-                toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                        </svg>`;
-            }
-        });
-
-        membersList.appendChild(headerDiv);
-        membersList.appendChild(dropdown);
+        updateMemberList(members);
+        return members;
     } catch (error) {
         console.error("Error loading group members:", error);
+        return [];
     }
+}
+
+// 참여 인원 목록 업데이트 함수 (모바일 친화적 디자인)
+// 상단에 "참여 인원 (총 N명)"을 표시하고,
+// 그 아래 한 행에는 방장 정보와 토글 버튼이 배치되며,
+// 토글 버튼 클릭 시 방장을 제외한 일반 멤버 목록(강퇴 버튼 없이)이 드롭다운으로 표시됨.
+function updateMemberList(members) {
+    // "membersList" 요소를 사용 (HTML에 <div id="membersList"> 존재)
+    const container = document.getElementById("membersList");
+    if (!container) {
+        console.error("membersList 요소를 찾을 수 없습니다.");
+        return;
+    }
+    container.innerHTML = ""; // 초기화
+
+    const totalCount = members.length;
+
+    // API 응답 DTO에서 role 정보를 이용하여 방장(OWNER)와 일반 멤버(MEMBER) 구분
+    let ownerMember = members.find(member => member.role === "OWNER");
+    // fallback: 만약 role 정보가 없으면 groupOwnerId와 비교
+
+    if (!ownerMember) {
+        console.warn("방장 정보가 없습니다.");
+    }
+    const guestId = store.getState().guestId
+    const nonOwnerMembers = members.filter(member => member.userId !== ownerMember.userId)
+
+    // 1. 상단 헤더 업데이트: id="groupMemberHeader"가 있다면 업데이트
+    const headerElem = document.getElementById("groupMemberHeader");
+    if (headerElem) {
+        headerElem.textContent = `참여 인원 (${totalCount}명)`;
+    } else {
+        console.warn("groupMemberHeader 요소를 찾을 수 없습니다.");
+    }
+
+    // 2. 상단 행 구성: 방장 정보와 토글 버튼을 한 행에 배치
+    const headerRow = document.createElement("div");
+    headerRow.className = "flex items-center justify-between p-3 border-b";
+
+    const ownerSpan = document.createElement("span");
+    ownerSpan.className = "font-bold text-base";
+    ownerSpan.textContent = ownerMember
+        ? `${ownerMember.nickname} (방장)`
+        : "방장 정보 없음";
+    headerRow.appendChild(ownerSpan);
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "toggleMemberBtn";
+    toggleBtn.className = "focus:outline-none";
+    toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                                  viewBox="0 0 24 24" stroke="currentColor">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                     d="M19 9l-7 7-7-7" />
+                           </svg>`;
+    headerRow.appendChild(toggleBtn);
+
+    container.appendChild(headerRow);
+
+    // 3. 드롭다운 목록 구성: 방장을 제외한 일반 멤버 목록 (초기에는 숨김)
+    const dropdown = document.createElement("div");
+    dropdown.id = "memberDropdown";
+    dropdown.className = "mt-2 border border-gray-200 rounded hidden";
+    console.log("guestId : " + guestId)
+    console.log(JSON.stringify(nonOwnerMembers))
+    nonOwnerMembers.forEach(member => {
+
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between p-3 border-b";
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "text-base";
+        if ( member.userId === guestId )
+            nameSpan.textContent = `${member.nickname}(나)`;
+        else
+            nameSpan.textContent = member.nickname;
+        item.appendChild(nameSpan);
+        dropdown.appendChild(item);
+    });
+    container.appendChild(dropdown);
+
+    // 4. 토글 버튼 클릭 이벤트: 드롭다운 목록 표시/숨김 전환
+    toggleBtn.addEventListener("click", () => {
+        if (dropdown.classList.contains("hidden")) {
+            dropdown.classList.remove("hidden");
+            // 위쪽 삼각형 아이콘 (▲)
+            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M5 15l7-7 7 7" />
+                                   </svg>`;
+        } else {
+            dropdown.classList.add("hidden");
+            // 아래쪽 삼각형 아이콘 (▼)
+            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" 
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M19 9l-7 7-7-7" />
+                                   </svg>`;
+        }
+    });
 }
 
 function toggleLocationHandler(e) {

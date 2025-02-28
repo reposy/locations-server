@@ -20,17 +20,16 @@ class GroupMember(
     @JoinColumn(name = "user_id", nullable = false)
     var user: User,
 
-    @Column(name = "is_sharing_location", nullable = false)
-    var isSharingLocation: Boolean = false,
-
     @Column(name = "joined_at", nullable = false)
-    var joinedAt: LocalDateTime = LocalDateTime.now()
-) : AuditableEntity() {
+    var joinedAt: LocalDateTime = LocalDateTime.now(),
 
-    /**
-     * 그룹 멤버의 위치 공유 상태를 업데이트합니다.
-     */
-    fun updateSharingStatus(newStatus: Boolean) {
-        this.isSharingLocation = newStatus
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    var role: GroupMemberRole = GroupMemberRole.MEMBER
+
+) : AuditableEntity()
+
+enum class GroupMemberRole {
+    OWNER,   // 그룹 소유자 (방장)
+    MEMBER   // 일반 멤버
 }

@@ -51,7 +51,7 @@ class GroupApiController(
             maxUsers = request.maxUsers
         )
         val createdGroup = groupService.createGroup(group)
-        groupMemberService.addMember(createdGroup, user, isSharingLocation = true)
+        groupMemberService.addMember(createdGroup, user)
 
         return GroupResponse.fromEntity(createdGroup)
     }
@@ -92,7 +92,8 @@ class GroupApiController(
         if (!groupMemberService.isOwner(userInfo.id, groupId)) {
             throw IllegalArgumentException("삭제 권한이 없습니다.")
         }
-        val deletedGroup = groupService.deleteGroup(groupId)
+        val requestId = userInfo.id
+        val deletedGroup = groupService.deleteGroup(requestId, groupId)
         return GroupResponse.fromEntity(deletedGroup)
     }
 }
