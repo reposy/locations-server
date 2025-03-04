@@ -9,11 +9,12 @@ import springbootkotlin.locationsserver.domain.group.entity.GroupMemberRole
 import springbootkotlin.locationsserver.domain.user.entity.User
 import springbootkotlin.locationsserver.websocket.WebsocketService
 import java.time.LocalDateTime
+import org.springframework.context.annotation.Lazy
 
 @Service
 @Transactional
 class GroupMemberService(
-    private val groupService: GroupService,
+    @Lazy private val groupService: GroupService,
     private val groupMemberRepository: GroupMemberRepository,
     private val websocketService: WebsocketService
 ) {
@@ -78,7 +79,8 @@ class GroupMemberService(
             throw IllegalArgumentException("해당 그룹의 소유자만 멤버를 강퇴할 수 있습니다.")
 
         // 그룹 소유자는 강퇴될 수 없음
-        if (group.createUser.id == memberId)
+        if (requesterId != group.createUser.id
+            && group.createUser.id == memberId)
             throw IllegalArgumentException("그룹 소유자는 강퇴될 수 없습니다.")
 
         // 삭제할 멤버가 존재하는지 확인 후 삭제

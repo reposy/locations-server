@@ -7,8 +7,9 @@ import springbootkotlin.locationsserver.domain.user.entity.InvitationStatus
 import springbootkotlin.locationsserver.domain.user.entity.User
 
 interface UserInvitationRepository : JpaRepository<UserInvitation, Long> {
-    fun findByToUserIdAndStatus(userId: Long, status: InvitationStatus): List<UserInvitation>
+    fun deleteByGroup(group: Group)
 
+    fun findByToUserIdAndStatus(userId: Long, status: InvitationStatus): List<UserInvitation>
 
     fun findByGroupIdAndToUserIdAndStatus(groupId: Long, toUserId: Long, status: InvitationStatus): UserInvitation?
 

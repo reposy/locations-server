@@ -16,6 +16,10 @@ class UserInvitationService(
     private val groupMemberService: GroupMemberService
 ) {
 
+    fun deleteInvitationsByGroup(group: Group) {
+        userInvitationRepository.deleteByGroup(group)
+    }
+
     fun getUserInvitationById(invitationId: Long): UserInvitation? {
         return userInvitationRepository.findById(invitationId).orElse(null)
     }
