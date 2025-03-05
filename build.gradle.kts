@@ -25,6 +25,9 @@ dependencies {
 
     runtimeOnly("com.h2database:h2")
 
+    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
+    implementation("org.hibernate.orm:hibernate-community-dialects:6.6.9.Final")
+
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")

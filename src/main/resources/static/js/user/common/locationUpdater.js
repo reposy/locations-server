@@ -3,6 +3,7 @@ import { createMarker, createInfoWindow } from '../../naver/map/mapMarker.js';
 import { sendLocationUpdate } from '../../service/websocketService.js';
 
 let myLocationMarker = null;
+let myLocationInfoWindow = null; // 내 위치 정보창 저장 변수
 let locationIntervalId = null;
 
 /**
@@ -21,6 +22,12 @@ function updateMyLocation(latitude, longitude) {
     if (naverMap) {
         // 최초 호출 시 지도의 중심을 내 위치로 이동
         naverMap.setCenter(newPos);
+        // 지도 클릭 시 내 위치 정보창을 닫기
+        window.naver.maps.Event.addListener(naverMap, 'click', () => {
+            if (myLocationInfoWindow && myLocationInfoWindow.getMap()) {
+                myLocationInfoWindow.close();
+            }
+        });
     }
     if (myLocationMarker) {
         myLocationMarker.setPosition(newPos);
@@ -34,20 +41,24 @@ function updateMyLocation(latitude, longitude) {
             nickname: "내 위치"
         });
         console.log("내 위치 마커 생성");
-        // 내 마커에 대한 정보창 생성 및 클릭 시 열리도록 등록
+        // 내 마커에 대한 정보창 생성 및 클릭 시 토글하도록 등록
         const infoContent = `<div style="padding:5px;">내 위치 (사용자: ${store.getState().currentUser.nickname || "나"})</div>`;
-        const infoWindow = createInfoWindow(infoContent);
-        naverObj.maps.Event.addListener(myLocationMarker, 'click', () => {
-            infoWindow.open(naverMap, myLocationMarker);
+        myLocationInfoWindow = createInfoWindow(infoContent);
+        window.naver.maps.Event.addListener(myLocationMarker, 'click', () => {
+            if (myLocationInfoWindow && myLocationInfoWindow.getMap()) {
+                myLocationInfoWindow.close();
+            } else {
+                myLocationInfoWindow.open(naverMap, myLocationMarker);
+            }
         });
     }
-    const nickname = store.getState().currentUser.nickname
+    const nickname = store.getState().currentUser.nickname;
     const groupId = store.getSelectedGroupId();
     const currentUserId = store.getState().currentUser.id;
     sendLocationUpdate({ groupId, nickname, userId: currentUserId, latitude, longitude });
 }
 
-/* 실시간 위치 공유 관련 함수 (10초마다 갱신, 최초 즉시 실행) */
+/* 실시간 위치 공유 관련 함수 (5초마다 갱신, 최초 즉시 실행) */
 export async function startLocationWatch() {
     if (!navigator.geolocation) {
         console.error("Geolocation API를 지원하지 않습니다.");
@@ -72,7 +83,7 @@ export async function startLocationWatch() {
         { enableHighAccuracy: true, maximumAge: 30000, timeout: 5000 }
     );
 
-    // 이후 10초마다 위치 업데이트
+    // 이후 5초마다 위치 업데이트
     locationIntervalId = setInterval(() => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -96,5 +107,9 @@ export function stopLocationWatch() {
     if (myLocationMarker) {
         myLocationMarker.setMap(null);
         myLocationMarker = null;
+    }
+    if (myLocationInfoWindow) {
+        myLocationInfoWindow.close();
+        myLocationInfoWindow = null;
     }
 }

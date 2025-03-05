@@ -3,6 +3,7 @@ import { createMarker, createInfoWindow } from '../../naver/map/mapMarker.js';
 import { sendLocationUpdate } from '../../service/websocketService.js';
 
 let myLocationMarker = null;
+let myLocationInfoWindow = null; // 내 위치 정보창을 저장할 변수
 let locationIntervalId = null;
 
 /**
@@ -36,12 +37,17 @@ function updateMyLocation(latitude, longitude) {
         console.log("내 위치 마커 생성");
         // 내 마커에 대한 정보창 생성 및 클릭 이벤트 등록
         const infoContent = `<div style="padding:5px;">내 위치 (게스트: ${store.getState().guestNickname || "나"})</div>`;
-        const infoWindow = createInfoWindow(infoContent);
-        naverObj.maps.Event.addListener(myLocationMarker, 'click', () => {
-            infoWindow.open(naverMap, myLocationMarker);
+        myLocationInfoWindow = createInfoWindow(infoContent);
+        window.naver.maps.Event.addListener(myLocationMarker, 'click', () => {
+            // infoWindow가 열려 있으면 닫고, 아니면 열기 (토글)
+            if (myLocationInfoWindow && myLocationInfoWindow.getMap()) {
+                myLocationInfoWindow.close();
+            } else {
+                myLocationInfoWindow.open(naverMap, myLocationMarker);
+            }
         });
     }
-    const nickname = store.getState().guestNickname
+    const nickname = store.getState().guestNickname;
     const groupId = store.getState().groupId;
     const guestId = store.getState().guestId;
     sendLocationUpdate({ groupId, nickname, userId: guestId, latitude, longitude });
@@ -86,6 +92,16 @@ export async function startLocationWatch() {
             { enableHighAccuracy: true, maximumAge: 30000, timeout: 5000 }
         );
     }, 5000);
+
+    // 지도 클릭 시 내 위치 정보창 닫기
+    const naverMap = store.getNaverMap();
+    if (naverMap && window.naver && window.naver.maps && window.naver.maps.Event) {
+        window.naver.maps.Event.addListener(naverMap, 'click', () => {
+            if (myLocationInfoWindow && myLocationInfoWindow.getMap()) {
+                myLocationInfoWindow.close();
+            }
+        });
+    }
 }
 
 export function stopLocationWatch() {
@@ -96,5 +112,9 @@ export function stopLocationWatch() {
     if (myLocationMarker) {
         myLocationMarker.setMap(null);
         myLocationMarker = null;
+    }
+    if (myLocationInfoWindow) {
+        myLocationInfoWindow.close();
+        myLocationInfoWindow = null;
     }
 }

@@ -168,6 +168,17 @@ async function loadGroupDetail(groupId) {
             console.error("네이버 지도 초기화 실패");
             return;
         }
+
+        // 지도 클릭 시 모든 정보창 닫기
+        window.naver.maps.Event.addListener(map, 'click', () => {
+            for (const key in groupMarkers) {
+                if (groupMarkers[key].infoWindow) {
+                    groupMarkers[key].infoWindow.close();
+                }
+            }
+        });
+
+        // store에 map과 네이버 객체 저장 (window.naver 사용)
         store.setNaverMap(map);
         store.setNaver(window.naver);
         console.log("네이버 지도 초기화 완료");

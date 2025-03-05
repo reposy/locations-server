@@ -1,7 +1,7 @@
 import { store } from './guest-store.js';
 import { eventBus } from './guest-eventBus.js';
 import { initNaverMap } from '../naver/map/naver-map.js';
-import { createMarker } from '../naver/map/mapMarker.js';
+import {createInfoWindow, createMarker} from '../naver/map/mapMarker.js';
 import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic, subscribeToMemberUpdates } from '../service/websocketService.js';
 import { startLocationWatch, stopLocationWatch } from './common/guestLocationUpdater.js';
 
@@ -50,7 +50,7 @@ function handleLocationUpdate(update) {
     } else {
         const markerColor = "#00FF00"; // 타 사용자: 녹색
         if (groupMarkers[update.userId]) {
-            groupMarkers[update.userId].setPosition(newPos);
+            groupMarkers[update.userId].marker.setPosition(newPos);
             console.log(`사용자 ${update.userId} 마커 업데이트 (WebSocket)`);
         } else {
             const marker = createMarker(map, {
@@ -60,7 +60,19 @@ function handleLocationUpdate(update) {
                 markerColor: markerColor,
                 nickname: update.nickname || "멤버 위치"
             });
-            groupMarkers[update.userId] = marker;
+            // 추가: 정보창 생성
+            const infoContent = `<div style="padding:5px;">사용자: ${update.nickname || "알 수 없음"}</div>`;
+            const infoWindow = createInfoWindow(infoContent);
+            // 마커 클릭 시 infoWindow 토글
+            naverObj.maps.Event.addListener(marker, 'click', () => {
+                if (infoWindow.isOpen && infoWindow.isOpen()) {
+                    infoWindow.close();
+                } else {
+                    infoWindow.open(map, marker);
+                }
+            });
+            // groupMarkers 객체에 마커와 infoWindow 함께 저장
+            groupMarkers[update.userId] = { marker, infoWindow };
             console.log(`사용자 ${update.userId} 마커 생성 (WebSocket)`);
         }
     }
@@ -123,6 +135,14 @@ async function loadGroupDetail(groupId) {
         store.setNaverMap(map);
         store.setNaver(window.naver);
         console.log("네이버 지도 초기화 완료");
+
+        window.naver.maps.Event.addListener(map, 'click', () => {
+            for (const key in groupMarkers) {
+                if (groupMarkers[key].infoWindow) {
+                    groupMarkers[key].infoWindow.close();
+                }
+            }
+        });
 
         await loadGroupMembers(groupId);
         return data;
