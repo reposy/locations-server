@@ -87,30 +87,27 @@ function renderInvitations(container, invitations) {
         return;
     }
     invitations.forEach(invitation => {
+        // 전체 컨테이너: flex로 한 줄에 배치
         const inviteItem = document.createElement("div");
-        inviteItem.className = "p-3 border-b border-gray-200 flex items-center justify-between cursor-pointer";
+        inviteItem.className = "p-3 border-b border-gray-200 flex items-center space-x-2 cursor-pointer";
 
-        // 왼쪽 영역: 초대 정보 표시
-        const infoDiv = document.createElement("div");
-        infoDiv.className = "flex flex-col";
-        infoDiv.innerHTML = `
-            <p class="font-semibold">${invitation.fromUserNickname} 님이 초대함</p>
-            <p class="text-sm text-gray-600">초대 상태: ${invitation.status}</p>
-        `;
+        // 텍스트(초대 정보)
+        const textSpan = document.createElement("span");
+        // 너무 길 경우 줄임표(...) 처리
+        textSpan.className = "truncate";
+        textSpan.textContent = `${invitation.id}. ${invitation.fromUserNickname} 님이 '${invitation.groupName}' 그룹에 초대함`;
 
-        // 오른쪽 영역: 체크박스 및 개별 수락/거절 버튼들
-        const actionDiv = document.createElement("div");
-        actionDiv.className = "flex items-center space-x-2";
-
+        // 체크박스
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.className = "invitation-checkbox w-6 h-6";
         checkbox.value = invitation.id;
-        // 버튼 클릭 시 이벤트 버블링 막기
+        // 체크박스 클릭 시 이벤트 버블링 막기
         checkbox.addEventListener("click", (e) => e.stopPropagation());
 
+        // 수락 버튼
         const acceptBtn = document.createElement("button");
-        acceptBtn.className = "bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600";
+        acceptBtn.className = "bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 flex-shrink-0";
         acceptBtn.textContent = "수락";
         acceptBtn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -119,8 +116,9 @@ function renderInvitations(container, invitations) {
             }
         });
 
+        // 거절 버튼
         const declineBtn = document.createElement("button");
-        declineBtn.className = "bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600";
+        declineBtn.className = "bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 flex-shrink-0";
         declineBtn.textContent = "거절";
         declineBtn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -129,19 +127,20 @@ function renderInvitations(container, invitations) {
             }
         });
 
-        actionDiv.appendChild(checkbox);
-        actionDiv.appendChild(acceptBtn);
-        actionDiv.appendChild(declineBtn);
-
-        // 행 전체 클릭 시 체크박스 토글
+        // 아이템 전체를 클릭하면 체크박스 토글
         inviteItem.addEventListener("click", (e) => {
+            // 버튼 또는 체크박스 자체를 클릭한 경우 제외
             if (!e.target.closest("button") && e.target.type !== "checkbox") {
                 checkbox.checked = !checkbox.checked;
             }
         });
 
-        inviteItem.appendChild(infoDiv);
-        inviteItem.appendChild(actionDiv);
+        // 한 줄에 순서대로 추가
+        inviteItem.appendChild(textSpan);
+        inviteItem.appendChild(checkbox);
+        inviteItem.appendChild(acceptBtn);
+        inviteItem.appendChild(declineBtn);
+
         container.appendChild(inviteItem);
     });
 }
@@ -168,7 +167,12 @@ async function respondToInvitation(invitationId, isAccepted, suppressAlert = fal
             headers: { "Accept": "application/json" }
         });
         if (!response.ok) {
-            throw new Error("초대 응답 처리에 실패했습니다.");
+            let errorMessage = "초대 응답 처리에 실패했습니다.";
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorData.error || errorMessage;
+            } catch (e) { }
+            throw new Error(errorMessage);
         }
         const result = await response.json();
 
@@ -204,10 +208,14 @@ async function respondToInvitation(invitationId, isAccepted, suppressAlert = fal
 // 다중 초대에 대한 응답 처리: 선택된 초대들을 순차 처리 후, 단일 alert로 결과를 보여줌
 async function respondToInvitations(invitationIds, isAccepted, suppressAlert = false) {
     const messages = [];
-    // 각 초대에 대해 개별적으로 처리하되, 이벤트 emit은 suppressed함
+    // 각 초대에 대해 개별적으로 처리 (오류 발생 시 해당 초대의 에러 메시지를 누적)
     for (const id of invitationIds) {
-        const msg = await respondToInvitation(id, isAccepted, true, true);
-        messages.push(msg);
+        try {
+            const msg = await respondToInvitation(id, isAccepted, true, true);
+            messages.push(`${id}: ${msg}`);
+        } catch (error) {
+            messages.push(`${id} 실패: ${error.message}`);
+        }
     }
     // 모든 초대 처리 후, 하나의 alert로 결과 메시지를 표시 (옵션)
     const combinedMessage = messages.join("\n");

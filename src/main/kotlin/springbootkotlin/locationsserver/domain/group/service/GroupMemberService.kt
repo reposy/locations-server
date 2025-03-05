@@ -34,6 +34,11 @@ class GroupMemberService(
      * 그룹에 새 멤버를 추가합니다.
      */
     fun addMember(group: Group, user: User): GroupMember {
+        // 최대 사용자 수 체크: 이미 멤버 수가 최대치인 경우 예외 발생
+        if (group.members.size >= group.maxUsers) {
+            throw IllegalArgumentException("그룹이 꽉 찼습니다.")
+        }
+
         // 그룹 소유자인지 확인: 그룹의 createUser와 추가하려는 user 비교
         val role = if (group.createUser.id == user.id)
             GroupMemberRole.OWNER

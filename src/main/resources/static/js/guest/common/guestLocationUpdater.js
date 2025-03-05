@@ -1,5 +1,5 @@
 import { store } from '../guest-store.js';
-import { createMarker } from '../../naver/map/mapMarker.js';
+import { createMarker, createInfoWindow } from '../../naver/map/mapMarker.js';
 import { sendLocationUpdate } from '../../service/websocketService.js';
 
 let myLocationMarker = null;
@@ -34,11 +34,17 @@ function updateMyLocation(latitude, longitude) {
             nickname: "내 위치"
         });
         console.log("내 위치 마커 생성");
+        // 내 마커에 대한 정보창 생성 및 클릭 이벤트 등록
+        const infoContent = `<div style="padding:5px;">내 위치 (게스트: ${store.getState().guestNickname || "나"})</div>`;
+        const infoWindow = createInfoWindow(infoContent);
+        naverObj.maps.Event.addListener(myLocationMarker, 'click', () => {
+            infoWindow.open(naverMap, myLocationMarker);
+        });
     }
-    // 현재 사용자 ID는 store에서 관리
+    const nickname = store.getState().guestNickname
     const groupId = store.getState().groupId;
     const guestId = store.getState().guestId;
-    sendLocationUpdate({ groupId, userId: guestId, latitude, longitude });
+    sendLocationUpdate({ groupId, nickname, userId: guestId, latitude, longitude });
 }
 
 /* 실시간 위치 공유 관련 함수 (10초마다 갱신, 최초 즉시 실행) */
@@ -77,9 +83,9 @@ export async function startLocationWatch() {
             (error) => {
                 console.error("실시간 위치 추적 에러:", error);
             },
-            { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
+            { enableHighAccuracy: true, maximumAge: 30000, timeout: 5000 }
         );
-    }, 10000);
+    }, 5000);
 }
 
 export function stopLocationWatch() {

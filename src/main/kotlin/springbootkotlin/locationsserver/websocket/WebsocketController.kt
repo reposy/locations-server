@@ -16,6 +16,7 @@ class GroupLocationController(
 data class LocationUpdate(
     val groupId: Long,
     var userId: Long? = null,
+    val nickname: String? = null,
     val latitude: Double,
     val longitude: Double,
 )

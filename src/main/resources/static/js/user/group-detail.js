@@ -1,7 +1,7 @@
 import { store } from './store.js';
 import { eventBus } from './eventBus.js';
 import { initNaverMap } from '../naver/map/naver-map.js';
-import { createMarker } from '../naver/map/mapMarker.js';
+import { createMarker, createInfoWindow } from '../naver/map/mapMarker.js';
 import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic, subscribeToMemberUpdates } from '../service/websocketService.js';
 import { startLocationWatch, stopLocationWatch } from './common/locationUpdater.js';
 
@@ -86,12 +86,14 @@ function handleLocationUpdate(update) {
         console.log("내 위치 업데이트는 locationUpdater에서 처리됩니다.");
         return;
     }
-    // 타 사용자: 녹색 마커
+    // 타 사용자: 녹색 마커 사용
     const markerColor = "#00FF00";
     if (groupMarkers[update.userId]) {
-        groupMarkers[update.userId].setPosition(newPos);
+        // 기존 마커의 위치만 업데이트
+        groupMarkers[update.userId].marker.setPosition(newPos);
         console.log(`사용자 ${update.userId} 마커 업데이트`);
     } else {
+        // 새로운 사용자 마커 생성
         const marker = createMarker(map, {
             latitude: update.latitude,
             longitude: update.longitude,
@@ -99,7 +101,15 @@ function handleLocationUpdate(update) {
             markerColor: markerColor,
             nickname: update.nickname || "멤버 위치"
         });
-        groupMarkers[update.userId] = marker;
+        // 정보창 생성
+        const infoContent = `<div style="padding:5px;">사용자: ${update.nickname || "알 수 없음"}</div>`;
+        const infoWindow = createInfoWindow(infoContent);
+        // 마커 클릭 시 정보창 열기 이벤트 등록
+        naverObj.maps.Event.addListener(marker, 'click', () => {
+            infoWindow.open(map, marker);
+        });
+        // groupMarkers 객체에 마커와 infoWindow를 함께 저장
+        groupMarkers[update.userId] = { marker, infoWindow };
         console.log(`사용자 ${update.userId} 마커 생성`);
     }
 }

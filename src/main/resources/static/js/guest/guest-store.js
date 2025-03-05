@@ -2,6 +2,7 @@ export const store = {
     state: {
         groupId: null,
         guestId: null,
+        guestNickname: null,
         currentUser: null,
         naverMap: null,
         naver: null,

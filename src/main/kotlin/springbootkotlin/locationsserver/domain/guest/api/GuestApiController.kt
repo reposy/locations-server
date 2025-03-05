@@ -13,6 +13,7 @@ import springbootkotlin.locationsserver.domain.group.entity.GroupMember
 import springbootkotlin.locationsserver.domain.group.service.GroupInvitationTokenService
 import springbootkotlin.locationsserver.domain.group.service.GroupMemberService
 import springbootkotlin.locationsserver.domain.group.service.GroupService
+import springbootkotlin.locationsserver.domain.guest.entity.Guest
 import springbootkotlin.locationsserver.domain.guest.service.GuestService
 import java.time.format.DateTimeFormatter
 
@@ -56,6 +57,7 @@ class GuestApiController(
         if (tokenEntity == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 GroupInvitationJoinResponse(
+                    guestNickname = null,
                     groupId = null,
                     guestId = null,
                     expiresAt = null,
@@ -76,6 +78,7 @@ class GuestApiController(
             GroupInvitationJoinResponse(
                 groupId = tokenEntity.groupId,
                 guestId = guest.id,
+                guestNickname = guest.nickname,
                 expiresAt = tokenEntity.expiresAt.format(formatter),
                 message = "게스트로 그룹 입장이 완료되었습니다."
             )
@@ -107,6 +110,7 @@ class GuestApiController(
 }
 
 data class GroupInvitationJoinResponse(
+    val guestNickname: String?,
     val groupId: Long?,
     val guestId: Long?,
     val expiresAt: String?,

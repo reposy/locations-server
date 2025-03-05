@@ -30,6 +30,7 @@ class GroupMemberApiController(
         val user = userService.findById(request.userId)
             ?: throw IllegalArgumentException("User not found with id: ${request.userId}")
         val group = groupService.getGroupById(groupId)
+
         val member = groupMemberService.addMember(
             group = group,
             user = user,

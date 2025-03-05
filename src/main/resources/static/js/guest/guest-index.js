@@ -28,7 +28,7 @@ async function consumeToken(token) {
         });
         if (!response.ok) {
             const errorData = await response.json();
-            alert(errorData.message || "토큰 소비에 실패했습니다.");
+            alert(errorData.error || "그룹 참가에 실패했습니다.");
             // 실패 시 로그인 페이지로 리다이렉트
             window.location.href = "/users/signin";
             return;
@@ -37,6 +37,7 @@ async function consumeToken(token) {
         // 그룹 입장 성공: store에 그룹 ID 저장 후, guest-group-detail 페이지로 이동
         store.setState({ groupId: data.groupId });
         store.setState({ guestId: data.guestId });
+        store.setState({ guestNickname: data.guestNickname })
         eventBus.emit("navigate", `/guest/guest-group-detail`);
     } catch (e) {
         console.error("Error consuming token:", e);
