@@ -10,6 +10,6 @@ class UserSignInViewController {
 
     @GetMapping("")
     fun signInPage(): String {
-        return "/auth/user/signin/signin-form" // ✅ `signin-form.html` 뷰 반환
+        return "auth/user/signin/signin-form" // ✅ `signin-form.html` 뷰 반환
     }
 }

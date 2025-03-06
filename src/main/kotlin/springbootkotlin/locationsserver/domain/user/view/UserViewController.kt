@@ -10,21 +10,11 @@ class UserViewController {
 
     @GetMapping("/")
     fun index(): String {
-        return "/user/index"
+        return "user/index"
     }
 
     @GetMapping("/group-list")
     fun groupList(): String {
-        return "/user/group-list"
-    }
-
-    @GetMapping("/profile")
-    fun profilePage(): String {
-        return "/user/profile"
-    }
-
-    @GetMapping("/invitations")
-    fun invitationListPage(): String {
-        return "/user/invitations/invitation-list"
+        return "user/group-list"
     }
 }

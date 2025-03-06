@@ -29,6 +29,6 @@ class GroupViewController(
             throw IllegalArgumentException("Access denied: You are not authorized to view this group")
         }
 
-        return "/user/group-detail"
+        return "user/group-detail"
     }
 }

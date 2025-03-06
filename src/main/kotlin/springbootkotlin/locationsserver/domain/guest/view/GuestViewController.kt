@@ -10,12 +10,12 @@ class GuestViewController {
 
     @GetMapping
     fun index(): String {
-        return "/guest/guest-index"
+        return "guest/guest-index"
     }
 
     @GetMapping("/guest-group-detail")
     fun guestGroupDetail(): String {
-        return "/guest/guest-group-detail"
+        return "guest/guest-group-detail"
     }
 
 }

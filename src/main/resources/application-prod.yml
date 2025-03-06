@@ -2,4 +2,4 @@ spring:
   application:
     name: locations-server
   config:
-    import: "http://${CONFIG_SERVER_USER}:${CONFIG_SERVER_PASSWORD}@${CONFIG_SERVER_HOST}/"
+    import: "http://${CONFIG_SERVER_USER}:${CONFIG_SERVER_PASSWORD}@${CONFIG_SERVER_HOST}"
