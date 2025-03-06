@@ -1,5 +1,5 @@
 docker-compose.yml
-**.db
+.db
 
 HELP.md
 .gradle
