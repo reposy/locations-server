@@ -12,11 +12,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     });
 
-    eventBus.on("navigate", (url) => {
+    eventBus.on("navigate", async (url) => {
+        await loadCurrentUser();
         loadContent(url);
     });
 
-    await loadCurrentUser();
 
     eventBus.emit("navigate", "/group-list");
 });

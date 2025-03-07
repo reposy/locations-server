@@ -36,19 +36,19 @@ class NaverMapApiController(
             .addHeader("X-NCP-APIGW-API-KEY", naverMapProperties.clientSecret)
             .get()
             .build()
-        return ResponseEntity.ok("")
-//        return try {
-//            httpClient.newCall(request).execute().use { response ->
-//                println(response.body)
-//                if (!response.isSuccessful) {
-//                    throw RuntimeException("📌 네이버 Reverse Geocoding API 호출 실패: ${response.code}")
-//                }
-//                ResponseEntity.ok(response.body?.string() ?: "주소 없음")
-//            }
-//    } catch (e: Exception) {
-//        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//            .body("📌 서버에서 주소 변환 요청 중 오류 발생: ${e.message}")
-//    }
+
+        return try {
+            httpClient.newCall(request).execute().use { response ->
+                println(response.body)
+                if (!response.isSuccessful) {
+                    throw RuntimeException("📌 네이버 Reverse Geocoding API 호출 실패: ${response.code}")
+                }
+                ResponseEntity.ok(response.body?.string() ?: "주소 없음")
+            }
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("📌 서버에서 주소 변환 요청 중 오류 발생: ${e.message}")
+        }
 
 //            ResponseEntity.ok(
 //                """

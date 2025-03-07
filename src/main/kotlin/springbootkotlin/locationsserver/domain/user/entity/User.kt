@@ -16,17 +16,17 @@ class User(
 
     @Column(nullable = false, unique = true)
     @field:NotBlank(message = "Username cannot be blank")
-    val username: String,
+    var username: String,
 
     @Column(nullable = false)
-    val password: String,
+    var password: String,
 
     @Column(nullable = false, unique = true)
-    val nickname: String,
+    var nickname: String,
 
     @Column(nullable = false, unique = true)
     @field:Email(message = "Invalid email address")
-    val emailAddress: String,
+    var emailAddress: String,
 
     @Column(nullable = false, updatable = false)
     val joinedAt: LocalDateTime = LocalDateTime.now(),

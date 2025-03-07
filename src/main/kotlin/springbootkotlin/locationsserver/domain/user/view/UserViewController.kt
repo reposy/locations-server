@@ -17,4 +17,9 @@ class UserViewController {
     fun groupList(): String {
         return "user/group-list"
     }
+
+    @GetMapping("/user-profile")
+    fun profile(): String {
+        return "user/user-profile"
+    }
 }

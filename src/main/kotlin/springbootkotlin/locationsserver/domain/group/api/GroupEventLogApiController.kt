@@ -68,7 +68,7 @@ data class GroupEventLogResponse(
         fun fromEntity(entity: GroupEventLog): GroupEventLogResponse {
             return GroupEventLogResponse(
                 id = entity.id,
-                groupId = entity.group.id!!,
+                groupId = entity.group.id,
                 eventType = entity.eventType,
                 description = entity.description,
                 createdAt = entity.createdAt.toString()

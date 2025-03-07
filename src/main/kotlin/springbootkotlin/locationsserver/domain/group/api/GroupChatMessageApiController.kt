@@ -74,7 +74,7 @@ data class GroupChatMessageResponse(
         fun fromEntity(entity: GroupChatMessage): GroupChatMessageResponse {
             return GroupChatMessageResponse(
                 id = entity.id,
-                groupId = entity.group.id!!,
+                groupId = entity.group.id,
                 senderId = entity.sender.id,
                 message = entity.message,
                 createdAt = entity.createdAt.toString()

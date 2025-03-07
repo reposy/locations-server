@@ -10,15 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
             eventBus.emit("navigate", "/group-list");
         });
     } else {
-        console.error("btnGroupList not found");
+        console.error("groupListBtn not found");
     }
 
     if (profileBtn) {
         profileBtn.addEventListener("click", () => {
-            eventBus.emit("navigate", "/profile");
+            eventBus.emit("navigate", "/user-profile");
         });
     } else {
-        console.error("btnProfile not found");
+        console.error("profileBtn not found");
     }
 
     if (signOutBtn) {

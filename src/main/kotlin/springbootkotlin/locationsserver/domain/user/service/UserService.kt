@@ -1,14 +1,17 @@
 package springbootkotlin.locationsserver.domain.user.service
 
+import jakarta.servlet.http.HttpSession
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import springbootkotlin.locationsserver.domain.auth.user.session.UserSessionService
 import springbootkotlin.locationsserver.domain.user.entity.User
 import springbootkotlin.locationsserver.domain.user.repository.UserRepository
 import java.time.LocalDateTime
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sessionService: UserSessionService
 ) {
 
     @Transactional(readOnly = true)
@@ -43,5 +46,64 @@ class UserService(
     @Transactional(readOnly = true)
     fun searchUsersNotInGroup(query: String, groupId: Long, currentUserId: Long): List<User> {
         return userRepository.searchUsersNotInGroup(query, currentUserId, groupId)
+    }
+
+    @Transactional
+    fun updateNickname(userId: Long, newNickname: String, session: HttpSession): User {
+        val userInfo = sessionService.getUserInfo(session)
+        if (userId != userInfo.id) {
+            throw IllegalArgumentException("자신의 프로필만 수정할 수 있습니다.")
+        }
+        val user = findById(userId) ?: throw IllegalArgumentException("User not found with id: $userId")
+
+        // 기존 값과 동일한지 확인
+        if (user.nickname == newNickname) {
+            throw IllegalArgumentException("새 별명이 기존 별명과 동일합니다.")
+        }
+        // 다른 사용자에게 이미 사용 중인 별명인지 확인 (본인 제외)
+        if (userRepository.existsByNicknameAndIdNot(newNickname, userId)) {
+            throw IllegalArgumentException("해당 별명은 이미 사용 중입니다.")
+        }
+
+        user.nickname = newNickname
+        return userRepository.save(user)
+    }
+
+    @Transactional
+    fun updateEmail(userId: Long, newEmail: String, session: HttpSession): User {
+        val userInfo = sessionService.getUserInfo(session)
+        if (userId != userInfo.id) {
+            throw IllegalArgumentException("자신의 프로필만 수정할 수 있습니다.")
+        }
+        val user = findById(userId) ?: throw IllegalArgumentException("User not found with id: $userId")
+
+        if (user.emailAddress == newEmail) {
+            throw IllegalArgumentException("새 이메일이 기존 이메일과 동일합니다.")
+        }
+        // 다른 사용자에게 이미 사용 중인 이메일인지 확인 (본인 제외)
+        if (userRepository.existsByEmailAddressAndIdNot(newEmail, userId)) {
+            throw IllegalArgumentException("해당 이메일은 이미 사용 중입니다.")
+        }
+
+        user.emailAddress = newEmail
+        return userRepository.save(user)
+    }
+
+    @Transactional
+    fun updatePassword(userId: Long, newPassword: String, session: HttpSession): User {
+        val userInfo = sessionService.getUserInfo(session)
+
+        if (userId != userInfo.id) {
+            throw IllegalArgumentException("자신의 프로필만 수정할 수 있습니다.")
+        }
+        val user = findById(userId) ?: throw IllegalArgumentException("User not found with id: $userId")
+
+        if (user.password == newPassword) {
+            throw IllegalArgumentException("새 비밀번호가 기존 비밀번호와 동일합니다.")
+        }
+
+        // 비밀번호 암호화 로직이 추가되어야 할 수도 있습니다.
+        user.password = newPassword
+        return userRepository.save(user)
     }
 }

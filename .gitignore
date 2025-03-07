@@ -45,3 +45,5 @@ out/
 .kotlin
 
 keystore.p12
+
+locations-server.db

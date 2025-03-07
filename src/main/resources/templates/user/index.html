@@ -17,8 +17,9 @@
 <!-- 고정 하단 네비게이션 바 -->
 <div th:replace="user/common/bottom-nav :: bottomNav"></div>
 
-<!-- 선택적 푸터 영역 -->
-<div th:replace="user/common/footer :: footer"></div>
+<!--footer 주석처리-->
+<!--&lt;!&ndash; 선택적 푸터 영역 &ndash;&gt;-->
+<!--<div th:replace="user/common/footer :: footer"></div>-->
 
 <!-- 모달 프래그먼트: 그룹 생성 -->
 <div th:replace="user/group-create-modal :: groupCreateModal"></div>
@@ -40,6 +41,7 @@
 
 <script type="module" src="/js/user/common/header.js" defer></script>
 <script type="module" src="/js/user/index.js" defer></script>
+<script type="module" src="/js/user/user-profile.js" defer></script>
 <script type="module" src="/js/user/group-list.js" defer></script>
 <script type="module" src="/js/user/group-detail.js" defer></script>
 <script type="module" src="/js/user/group-create-modal.js" defer></script>

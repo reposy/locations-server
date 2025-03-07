@@ -67,7 +67,46 @@ class UserApiController(
         val users = userService.searchUsersNotInGroup(query, groupId, currentUserId)
         return users.map { UserResponse.fromEntity(it) }
     }
+
+    @PutMapping("/profile/nickname")
+    fun updateNickname(@RequestBody request: UpdateNicknameRequest, session: HttpSession): UserResponse {
+
+        // userInfo.id를 이용해서 업데이트하며, 서비스 내부에서 기존 값과 동일한지 확인하도록 합니다.
+        val updatedUser = userService.updateNickname(request.userId, request.nickname, session)
+        return UserResponse.fromEntity(updatedUser)
+    }
+
+    @PutMapping("/profile/email")
+    fun updateEmail(@RequestBody request: UpdateEmailRequest, session: HttpSession): UserResponse {
+
+        val updatedUser = userService.updateEmail(request.userId, request.email, session)
+        return UserResponse.fromEntity(updatedUser)
+    }
+
+    @PutMapping("/profile/password")
+    fun updatePassword(@RequestBody request: UpdatePasswordRequest, session: HttpSession): UserResponse {
+
+        val updatedUser = userService.updatePassword(request.userId, request.password, session)
+        return UserResponse.fromEntity(updatedUser)
+    }
 }
+
+
+data class UpdateNicknameRequest(
+    val userId: Long,
+    val nickname: String
+)
+
+data class UpdateEmailRequest(
+    val userId: Long,
+    val email: String
+)
+
+data class UpdatePasswordRequest(
+    val userId: Long,
+    val password: String
+)
+
 
 // 요청 DTO
 data class CreateUserRequest(
