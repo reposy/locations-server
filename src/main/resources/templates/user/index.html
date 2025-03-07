@@ -4,7 +4,7 @@
     <th:block th:replace="user/common/head :: head"></th:block>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen relative">
-<!-- 고정 헤더 (사이드 메뉴 포함) -->
+<!-- 고정 헤더 (사이드 메뉴는 개발했지만, 주석처리해놓음) -->
 <div th:replace="user/common/header :: header"></div>
 
 <!-- 헤더와 메인 콘텐츠 경계선 -->
@@ -34,7 +34,10 @@
 <!-- 공통 스크립트 -->
 <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
 <script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
-<script type="module" src="/js/user/common/sidemenu.js" defer></script>
+
+<!--    사이드메뉴 주석, 기능 추가할 때 넣을 예정 -->
+<!--<script type="module" src="/js/user/common/sidemenu.js" defer></script>-->
+
 <script type="module" src="/js/user/common/header.js" defer></script>
 <script type="module" src="/js/user/index.js" defer></script>
 <script type="module" src="/js/user/group-list.js" defer></script>

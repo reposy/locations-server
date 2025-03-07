@@ -1,31 +1,35 @@
 import { eventBus } from '../eventBus.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-    const btnGroupList = document.getElementById("btnGroupList");
-    const btnProfile = document.getElementById("btnProfile");
-    const btnSettings = document.getElementById("btnSettings");
+    const groupListBtn = document.getElementById("groupListBtn");
+    const profileBtn = document.getElementById("profileBtn");
+    const signOutBtn = document.getElementById("signOutBtn");
 
-    if (btnGroupList) {
-        btnGroupList.addEventListener("click", () => {
+    if (groupListBtn) {
+        groupListBtn.addEventListener("click", () => {
             eventBus.emit("navigate", "/group-list");
         });
     } else {
         console.error("btnGroupList not found");
     }
 
-    if (btnProfile) {
-        btnProfile.addEventListener("click", () => {
+    if (profileBtn) {
+        profileBtn.addEventListener("click", () => {
             eventBus.emit("navigate", "/profile");
         });
     } else {
         console.error("btnProfile not found");
     }
 
-    if (btnSettings) {
-        btnSettings.addEventListener("click", () => {
-            eventBus.emit("navigate", "/settings");
+    if (signOutBtn) {
+        signOutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            fetch("/api/auth/users/signout", { method: "GET", headers: { "Accept": "application/json" } })
+                .then(response => {
+                    if (response.ok) { window.location.href = "/"; }
+                    else { console.error("로그아웃 실패"); }
+                })
+                .catch(err => console.error("로그아웃 요청 실패", err));
         });
-    } else {
-        console.error("btnSettings not found");
-    }
+    } else { console.error("로그아웃 버튼을 찾을 수 없습니다."); }
 });

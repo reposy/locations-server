@@ -1,16 +1,27 @@
 <div th:fragment="bottomNav">
     <nav class="fixed bottom-0 left-0 right-0 h-16 bg-white shadow-md flex items-center justify-around z-40">
-        <button id="btnGroupList" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
-            <span class="text-xl">📍</span>
+        <!-- 내 그룹 버튼: 지도 핀 아이콘 -->
+        <button id="groupListBtn" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21c-4.418 0-8-3.582-8-8 0-3.045 1.66-5.675 4-7.091M12 21c4.418 0 8-3.582 8-8 0-3.045-1.66-5.675-4-7.091" />
+            </svg>
             <span class="text-sm">내 그룹</span>
         </button>
-        <button id="btnProfile" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
-            <span class="text-xl">👤</span>
+        <!-- 프로필 버튼: 사용자 아이콘 -->
+        <button id="profileBtn" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.761 0 5.333.756 7.879 2.043M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
             <span class="text-sm">프로필</span>
         </button>
-        <button id="btnSettings" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
-            <span class="text-xl">⚙️</span>
-            <span class="text-sm">설정</span>
+        <!-- 로그아웃 버튼: 문을 여는 아이콘 -->
+        <button id="signOutBtn" class="flex flex-col items-center text-gray-600 hover:text-blue-500 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h4a2 2 0 002-2V5a2 2 0 00-2-2H7" />
+            </svg>
+            <span class="text-sm">로그아웃</span>
         </button>
     </nav>
 </div>
