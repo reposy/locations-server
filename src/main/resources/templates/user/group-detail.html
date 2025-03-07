@@ -3,11 +3,13 @@
     <h1 id="groupName" class="text-3xl font-bold mb-4 text-center">그룹 이름</h1>
 
     <!-- 내 위치 공유 토글 -->
-    <div class="mb-6 flex items-center justify-center">
-        <label class="flex items-center space-x-2">
+    <div class="mb-6 flex flex-col items-center justify-center space-y-2">
+        <div class="flex items-center space-x-2">
             <span class="text-gray-700">내 위치 공유:</span>
             <input type="checkbox" id="toggleLocation" class="form-checkbox h-6 w-6 text-green-500">
-        </label>
+        </div>
+        <!-- 로딩 스피너: 기본 숨김 처리 -->
+        <div id="locationLoading" class="hidden w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
     <!-- 참여 인원 및 초대 버튼 -->

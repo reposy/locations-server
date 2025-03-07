@@ -1,5 +1,7 @@
+**/.well-known/acme-challenge/**
 docker-compose.yml
 .db
+.p12
 
 HELP.md
 .gradle
@@ -41,3 +43,5 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+keystore.p12

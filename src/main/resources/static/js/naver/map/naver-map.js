@@ -1,3 +1,5 @@
+import { store } from "../../user/store.js";
+
 const loadNaverMapScript = async (clientId) => {
     return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src*="maps.js"]`)) {
@@ -22,7 +24,11 @@ const loadNaverMapScript = async (clientId) => {
 
 const fetchClientId = async () => {
     try {
-        const response = await fetch("/api/naver/map/client-id");
+        const isGuest = !store.getState().currentUser.id;
+        const url = isGuest
+            ? "/api/guest/naver/map/client-id"
+            : "/api/naver/map/client-id";
+        const response = await fetch(url);
         if (!response.ok) throw new Error("📌 네이버 지도 Client ID를 가져오는 데 실패했습니다.");
         const data = await response.json();
         return data.clientId;

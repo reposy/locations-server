@@ -2,7 +2,13 @@ import { store } from './guest-store.js';
 import { eventBus } from './guest-eventBus.js';
 import { initNaverMap } from '../naver/map/naver-map.js';
 import {createInfoWindow, createMarker} from '../naver/map/mapMarker.js';
-import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic, subscribeToMemberUpdates } from '../service/websocketService.js';
+import {
+    initWebSocket,
+    disconnectWebSocket,
+    subscribeToGroupTopic,
+    subscribeToMemberUpdates,
+    sendLocationUpdate
+} from '../service/websocketService.js';
 import { startLocationWatch, stopLocationWatch } from './common/guestLocationUpdater.js';
 
 let groupMarkers = {}; // 그룹 내 다른 사용자(멤버) 마커 저장
@@ -283,9 +289,23 @@ function updateMemberList(members) {
 }
 
 function toggleLocationHandler(e) {
+    const loadingIcon = document.getElementById("locationLoading");
     if (e.target.checked) {
+        // 위치 공유 시작 시, 로딩 아이콘 보이기
+        if (loadingIcon) {
+            loadingIcon.classList.remove("hidden");
+        }
         startLocationWatch();
     } else {
+        // 위치 공유 해제 시, 로딩 아이콘 숨기기
+        if (loadingIcon) {
+            loadingIcon.classList.add("hidden");
+        }
         stopLocationWatch();
+        sendLocationUpdate({
+            groupId: store.getState().groupId,
+            userId: store.getState().guestId,
+            locationSharing: false
+        });
     }
 }

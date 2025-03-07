@@ -2,7 +2,13 @@ import { store } from './store.js';
 import { eventBus } from './eventBus.js';
 import { initNaverMap } from '../naver/map/naver-map.js';
 import { createMarker, createInfoWindow } from '../naver/map/mapMarker.js';
-import { initWebSocket, disconnectWebSocket, subscribeToGroupTopic, subscribeToMemberUpdates } from '../service/websocketService.js';
+import {
+    initWebSocket,
+    disconnectWebSocket,
+    subscribeToGroupTopic,
+    subscribeToMemberUpdates,
+    sendLocationUpdate
+} from '../service/websocketService.js';
 import { startLocationWatch, stopLocationWatch } from './common/locationUpdater.js';
 
 let groupMarkers = {}; // 그룹 내 다른 사용자(멤버) 마커 저장
@@ -80,6 +86,18 @@ function handleLocationUpdate(update) {
         console.error("네이버 지도 관련 객체가 없습니다.");
         return;
     }
+
+    console.log(update)
+    // 만약 update에 locationSharing 플래그가 false면 해당 사용자의 마커를 제거합니다.
+    if (update.locationSharing === false) {
+        if (groupMarkers[update.userId]) {
+            groupMarkers[update.userId].marker.setMap(null);
+            delete groupMarkers[update.userId];
+            console.log(`사용자 ${update.userId} 마커 제거`);
+        }
+        return;
+    }
+
     const newPos = new naverObj.maps.LatLng(update.latitude, update.longitude);
     const currentUserId = store.getState().currentUser.id;
     if (update.userId === currentUserId) {
@@ -358,9 +376,26 @@ async function kickMember(memberId) {
 }
 
 function toggleLocationHandler(e) {
+    // 로딩 스피너 요소를 가져옵니다.
+    const loadingIcon = document.getElementById("locationLoading");
     if (e.target.checked) {
+        // 위치 공유 시작: 로딩 스피너 보이기
+        if (loadingIcon) {
+            loadingIcon.classList.remove("hidden");
+        }
         startLocationWatch();
+        // (startLocationWatch 내부에서 위치가 성공적으로 받아지면 spinner를 숨기는 로직이 추가되거나,
+        // 또는 별도로 setTimeout 등으로 일정 시간 후에 재시도 메시지를 표시하도록 할 수 있습니다.)
     } else {
+        // 위치 공유 해제: 로딩 스피너 숨기기
+        if (loadingIcon) {
+            loadingIcon.classList.add("hidden");
+        }
         stopLocationWatch();
+        sendLocationUpdate({
+            groupId: store.getSelectedGroupId(),
+            userId: store.getState().currentUser.id,
+            locationSharing: false
+        });
     }
 }

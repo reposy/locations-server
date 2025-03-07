@@ -71,6 +71,11 @@ export async function startLocationWatch() {
             const { latitude, longitude } = position.coords;
             console.log("최초 위치:", latitude, longitude);
             updateMyLocation(latitude, longitude);
+            // 로딩 아이콘 숨기기
+            const loadingIcon = document.getElementById("locationLoading");
+            if (loadingIcon) {
+                loadingIcon.classList.add("hidden");
+            }
         },
         (error) => {
             console.error("최초 위치 요청 에러:", error);
@@ -78,13 +83,18 @@ export async function startLocationWatch() {
         { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
     );
 
-    // 이후 10초마다 위치 업데이트
+    // 이후 5초마다 위치 업데이트
     locationIntervalId = setInterval(() => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
                 console.log("실시간 위치:", latitude, longitude);
                 updateMyLocation(latitude, longitude);
+                // 로딩 아이콘 숨기기
+                const loadingIcon = document.getElementById("locationLoading");
+                if (loadingIcon) {
+                    loadingIcon.classList.add("hidden");
+                }
             },
             (error) => {
                 console.error("실시간 위치 추적 에러:", error);

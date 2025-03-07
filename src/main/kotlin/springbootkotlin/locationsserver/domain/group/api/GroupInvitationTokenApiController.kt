@@ -35,7 +35,9 @@ data class GroupInvitationResponse(
 ) {
     companion object {
         fun fromEntity(token: GroupInvitationToken): GroupInvitationResponse {
-            val baseUrl = "http://localhost:8080/api/guest/group-invitations/join"
+            val domain = System.getenv("APP_DOMAIN") ?: "localhost:8080"
+            val preUrl = if(domain == "localhost:8080") "http" else "https"
+            val baseUrl = "$preUrl://${domain}/api/guest/group-invitations/join"
             val link = "$baseUrl?token=${token.token}"
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             val expiration = token.expiresAt.format(formatter)

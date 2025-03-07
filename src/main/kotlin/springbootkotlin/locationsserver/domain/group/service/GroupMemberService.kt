@@ -63,7 +63,7 @@ class GroupMemberService(
      * 특정 그룹에 소속된 모든 멤버를 조회합니다.
      */
     fun getMembersByGroupId(groupId: Long): List<GroupMember> {
-        return groupMemberRepository.findByGroupId(groupId)
+        return groupMemberRepository.findMembersByGroupId(groupId)
     }
 
     /**

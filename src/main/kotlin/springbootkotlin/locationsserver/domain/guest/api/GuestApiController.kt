@@ -15,6 +15,8 @@ import springbootkotlin.locationsserver.domain.group.service.GroupMemberService
 import springbootkotlin.locationsserver.domain.group.service.GroupService
 import springbootkotlin.locationsserver.domain.guest.entity.Guest
 import springbootkotlin.locationsserver.domain.guest.service.GuestService
+import springbootkotlin.locationsserver.infrastructure.config.properties.NaverMapProperties
+import springbootkotlin.locationsserver.infrastructure.external.naver.map.api.res.NaverMapApiResponse
 import java.time.format.DateTimeFormatter
 
 @RestController
@@ -23,8 +25,16 @@ class GuestApiController(
     private val tokenService: GroupInvitationTokenService,
     private val groupService: GroupService,
     private val groupMemberService: GroupMemberService,
-    private val guestUserService: GuestService
-) {
+    private val guestUserService: GuestService,
+    private val naverMapProperties: NaverMapProperties,
+    ) {
+
+    @GetMapping("/naver/map/client-id")
+    fun getClientId(): ResponseEntity<NaverMapApiResponse> {
+        return ResponseEntity.ok(
+            NaverMapApiResponse(naverMapProperties.clientId)
+        )
+    }
 
     /**
      * /group-invitations/join 엔드포인트는 단순히 토큰 유효성을 검사한 후,

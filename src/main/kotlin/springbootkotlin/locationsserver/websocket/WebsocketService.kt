@@ -64,7 +64,7 @@ data class GroupMemberDTO(
     companion object {
         fun fromEntity(member: GroupMember): GroupMemberDTO {
             return GroupMemberDTO(
-                groupId = member.id,
+                groupId = member.group.id,
                 userId = member.user.id,
                 nickname = member.user.nickname,
                 role = member.role.name

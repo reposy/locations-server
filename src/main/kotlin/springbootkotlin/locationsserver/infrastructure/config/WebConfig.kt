@@ -14,6 +14,8 @@ class WebConfig(
         registry.addInterceptor(sessionInterceptor)
             .addPathPatterns("/**")
             .excludePathPatterns(
+                "/.well-known/acme-challenge/**",  // 추가: ACME 챌린지 경로 예외 처리
+
                 "/api/guest/**",
                 "/guest/**",
                 "/users/signin/**",
@@ -22,6 +24,7 @@ class WebConfig(
                 "/api/auth/users/signup/**",
                 "/api/auth/users/signout/**",
 
+                "/webjars/**", // sockjs 등
                 "/js/**",     // JavaScript 정적 리소스
                 "/css/**",    // CSS 정적 리소스
                 "/images/**", // 이미지 정적 리소스
