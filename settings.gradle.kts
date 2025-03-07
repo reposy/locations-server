@@ -1,1 +1,1 @@
-rootProject.name = "sharemap-server"
+rootProject.name = "locations-server"
